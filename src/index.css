@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+:root{
+  --pdpl-primary-bg: #DBEAFE;
+  --pdpl-primary: #2F3A8F;
+
+  --pdpl-secondary-bg: #FFE5D5;
+  --pdpl-secondary: #9A3412;
+
+  --pdpl-neutral-bg: #FEFDB8;
+  --pdpl-neutral: #956B00;
+
+  --pdpl-accent-bg: #DCFCE7;
+  --pdpl-accent: #166534;
+}

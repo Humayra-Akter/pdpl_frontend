@@ -4,6 +4,7 @@ import Admin from "./pages/Admin";
 import Dpo from "./pages/Dpo";
 import User from "./pages/User";
 import RequireAuth from "./auth/RequireAuth";
+import AdminLayout from "./layouts/AdminLayout";
 
 export default function App() {
   return (
@@ -12,7 +13,17 @@ export default function App() {
 
       {/* Protected */}
       <Route element={<RequireAuth roles={["ADMIN"]} />}>
-        <Route path="/admin" element={<Admin />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<Admin />} />
+          {/* placeholders for sidebar routes */}
+          <Route path="/admin/gap" element={<Admin />} />
+          <Route path="/admin/dpia" element={<Admin />} />
+          <Route path="/admin/ropa" element={<Admin />} />
+          <Route path="/admin/incidents" element={<Admin />} />
+          <Route path="/admin/policies" element={<Admin />} />
+          <Route path="/admin/training" element={<Admin />} />
+          <Route path="/admin/users" element={<Admin />} />
+        </Route>
       </Route>
 
       <Route element={<RequireAuth roles={["DPO"]} />}>

@@ -64,6 +64,7 @@ export default function Login() {
       const data = await apiPost("/auth/login", { email, password });
 
       // store token + user
+      
       localStorage.setItem("pdpl_token", data.token);
       localStorage.setItem("pdpl_user", JSON.stringify(data.user));
 
