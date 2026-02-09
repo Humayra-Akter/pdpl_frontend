@@ -14,16 +14,18 @@ import {
 } from "recharts";
 import {
   AlertTriangle,
-  CalendarClock,
-  ClipboardList,
   FileDown,
   Plus,
   ShieldCheck,
   CheckCircle2,
+  ClipboardList,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getAdminSummary } from "../lib/admin";
+import { getAdminSummary, getGapSummary } from "../lib/admin";
 
+/**
+ * Fallbacks (only used if backend does not provide chart arrays yet)
+ */
 const fallbackDonut = [
   { name: "Completed", value: 64.7, tone: "accent" },
   { name: "In progress", value: 14.1, tone: "primary" },
@@ -91,11 +93,15 @@ function Card({ children, className = "" }) {
 
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
+
+  const name = payload[0].name || payload[0].dataKey || "Value";
+  const value = payload[0].value;
+
   return (
     <div className="rounded-xl bg-white px-3 py-2 text-sm shadow-md ring-1 ring-slate-200">
       <div className="text-xs text-slate-500">{label}</div>
       <div className="font-semibold text-slate-900">
-        {payload[0].name}: {payload[0].value}
+        {name}: {value}
       </div>
     </div>
   );
@@ -104,19 +110,32 @@ function CustomTooltip({ active, payload, label }) {
 export default function Admin() {
   const indigo = "var(--pdpl-primary)";
 
-  const [summary, setSummary] = useState(null);
+  const [adminSummary, setAdminSummary] = useState(null);
+  const [gapSummary, setGapSummary] = useState(null);
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    getAdminSummary()
-      .then((data) => {
-        setSummary(data);
+    let alive = true;
+
+    Promise.all([getAdminSummary(), getGapSummary()])
+      .then(([a, g]) => {
+        if (!alive) return;
+        setAdminSummary(a);
+        setGapSummary(g);
         setErr("");
       })
-      .catch((e) => setErr(e.message || "Failed to load"));
+      .catch((e) => {
+        if (!alive) return;
+        setErr(e?.message || "Failed to load dashboard");
+      });
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  if (!summary && !err) {
+  // Early states (NO hooks after this point)
+  if (!adminSummary && !gapSummary && !err) {
     return <div className="text-slate-600">Loading dashboard...</div>;
   }
 
@@ -129,37 +148,81 @@ export default function Admin() {
     );
   }
 
-  const k = summary?.kpis;
+  // ---- Admin counters (users)
+  const adminK = adminSummary?.kpis || {};
 
-  const donutData = summary?.charts?.donut ?? fallbackDonut;
-  const trendData = summary?.charts?.trend ?? fallbackTrend;
-  const dueBarsData = summary?.charts?.dueBars ?? fallbackBars;
+  // ---- Gap counters (assessments)
+  const gapK = gapSummary?.kpis || {};
+
+  // ---- Donut data (no useMemo)
+  let donutData;
+  {
+    const a = gapSummary?.charts?.statusDonut;
+    const b = gapSummary?.charts?.donut;
+    const raw = Array.isArray(a) ? a : Array.isArray(b) ? b : null;
+
+    if (!raw) {
+      donutData = fallbackDonut;
+    } else {
+      const tones = ["accent", "primary", "neutral", "secondary"];
+      donutData = raw.map((x, i) => ({
+        ...x,
+        tone: x.tone || tones[i % tones.length],
+      }));
+    }
+  }
+
+  // ---- Bars data (no useMemo)
+  let dueBarsData;
+  {
+    const a = gapSummary?.charts?.categoryBars;
+    const b = gapSummary?.charts?.dueBars;
+    const raw = Array.isArray(a) ? a : Array.isArray(b) ? b : null;
+
+    if (!raw) {
+      dueBarsData = fallbackBars;
+    } else if (raw.length && raw[0].label !== undefined) {
+      // already in { label, count }
+      dueBarsData = raw;
+    } else {
+      // normalize from { name, gaps } to { label, count }
+      dueBarsData = raw.map((x) => ({
+        label: x.name ?? "—",
+        count: x.gaps ?? 0,
+      }));
+    }
+  }
+
+  // ---- Trend data (no useMemo)
+  const trendRaw = gapSummary?.charts?.trend;
+  const trendData =
+    Array.isArray(trendRaw) && trendRaw.length ? trendRaw : fallbackTrend;
 
   const dynamicKpis = [
     {
       title: "Total Users",
-      value: k?.totalUsers ?? "—",
+      value: adminK?.totalUsers ?? "—",
       hint: "All accounts in system",
       icon: ShieldCheck,
       tone: "accent",
     },
     {
       title: "Active Users",
-      value: k?.activeUsers ?? "—",
+      value: adminK?.activeUsers ?? "—",
       hint: "Can login",
       icon: CheckCircle2,
       tone: "primary",
     },
     {
       title: "Inactive Users",
-      value: k?.inactiveUsers ?? "—",
+      value: adminK?.inactiveUsers ?? "—",
       hint: "Blocked / disabled",
       icon: AlertTriangle,
       tone: "secondary",
     },
     {
       title: "DPO Accounts",
-      value: k?.dpoCount ?? "—",
+      value: adminK?.dpoCount ?? "—",
       hint: "Data Protection Officers",
       icon: ClipboardList,
       tone: "neutral",
@@ -167,14 +230,10 @@ export default function Admin() {
   ];
 
   const queueItems = [
-    { label: "Total Users", val: k?.totalUsers ?? "—", tone: "primary" },
-    { label: "Active Users", val: k?.activeUsers ?? "—", tone: "accent" },
-    {
-      label: "Inactive Users",
-      val: k?.inactiveUsers ?? "—",
-      tone: "secondary",
-    },
-    { label: "DPO Accounts", val: k?.dpoCount ?? "—", tone: "neutral" },
+    { label: "Gap Total", val: gapK?.total ?? "—", tone: "primary" },
+    { label: "Gap In Progress", val: gapK?.inProgress ?? "—", tone: "neutral" },
+    { label: "Gap Completed", val: gapK?.completed ?? "—", tone: "accent" },
+    { label: "Critical Gaps", val: gapK?.critical ?? "—", tone: "secondary" },
   ];
 
   return (
@@ -308,23 +367,29 @@ export default function Admin() {
           </div>
 
           <div className="mt-4 h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={donutData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={2}
-                >
-                  {donutData.map((d, i) => (
-                    <Cell key={i} fill={toneVars(d.tone).fg} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            {donutData === 0 ? (
+              <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                No Gap data yet
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={donutData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={2}
+                  >
+                    {donutData.map((d, i) => (
+                      <Cell key={i} fill={toneVars(d.tone).fg} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
           <div className="mt-3 space-y-2">
@@ -340,7 +405,7 @@ export default function Admin() {
                   />
                   <span className="text-slate-700">{d.name}</span>
                 </div>
-                <span className="font-semibold text-slate-900">{d.value}%</span>
+                <span className="font-semibold text-slate-900">{d.value}</span>
               </div>
             ))}
           </div>
@@ -393,7 +458,7 @@ export default function Admin() {
         <Card>
           <div className="text-sm text-slate-500">Work Queue</div>
           <div className="text-base font-semibold text-slate-900">
-            Due distribution
+            Gap distribution
           </div>
 
           <div className="mt-4 h-40">

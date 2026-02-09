@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import {
   LayoutDashboard,
@@ -10,6 +10,7 @@ import {
   GraduationCap,
   LogOut,
 } from "lucide-react";
+import Breadcrumbs from "./Breadcrumbs";
 
 function Item({ to, icon: Icon, label }) {
   return (
@@ -43,13 +44,22 @@ function Item({ to, icon: Icon, label }) {
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
+  const { pathname } = useLocation();
+
+  const pageTitle = pathname.startsWith("/admin/dpia")
+    ? "DPIA Assessment"
+    : pathname.startsWith("/admin/gap")
+      ? "PDPL Gap Assessment"
+      : pathname.startsWith("/admin/ropa")
+        ? "RoPA"
+        : "Compliance Dashboard";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="flex min-h-screen">
         {/* Sidebar (fixed left on large screens) */}
         <aside className="hidden lg:block">
-          <div className="fixed left-0 top-0 h-screen w-72 border-r border-slate-200 bg-white">
+          <div className="fixed left-0 top-0 shadow-xl h-screen w-72 border-r border-slate-200 bg-white">
             {/* Brand area */}
             <div className="border-b border-slate-200 p-5">
               <div className="text-xs text-slate-500">PDPL Secure Portal</div>
@@ -80,12 +90,12 @@ export default function AdminLayout() {
                 <Item
                   to="/admin/dpia"
                   icon={FileText}
-                  label="Data Privacy Impact Assessment (DPIA)"
+                  label="Data Privacy Impact Assessment"
                 />
                 <Item
                   to="/admin/ropa"
                   icon={FileText}
-                  label="Record of Processing Activities (RoPA)"
+                  label="Record of Processing Activities"
                 />
 
                 <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
@@ -134,14 +144,12 @@ export default function AdminLayout() {
             <header className="sticky top-0 z-10 mb-6 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-xs text-slate-500">
-                    Last updated: just now
-                  </div>
+                  <Breadcrumbs />
                   <div
                     className="text-lg font-semibold"
                     style={{ color: "var(--pdpl-primary)" }}
                   >
-                    Compliance Dashboard
+                    {pageTitle}
                   </div>
                 </div>
 
