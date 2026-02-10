@@ -249,7 +249,7 @@ export default function DpiaWizard() {
   return (
     <div className="space-y-5">
       {/* Hero header */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 space-y-4">
+      <div className="rounded-2xl border bg-gradient-to-r from-indigo-50 via-white to-emerald-50 border-gray-200 bg-white p-6 space-y-4">
         {/* Top row */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -281,7 +281,7 @@ export default function DpiaWizard() {
         </div>
 
         {/* Progress bar */}
-        <div>
+         <div>
           <div className="h-2 w-full rounded-full bg-slate-100">
             <div
               className="h-2 rounded-full bg-blue-800"
@@ -291,7 +291,7 @@ export default function DpiaWizard() {
           <div className="mt-2 text-xs text-slate-500">
             All steps completed and submitted
           </div>
-        </div>
+        </div> 
       </div>
 
       {/* Stepper */}

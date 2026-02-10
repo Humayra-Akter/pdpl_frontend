@@ -43,3 +43,46 @@ export async function submitDpia(id) {
     method: "POST",
   });
 }
+
+// delete
+export async function deleteDpia(id) {
+  return api(`/admin/dpia/${id}`, {
+    method: "DELETE",
+  });
+}
+
+// ---------------- ROPA ----------------
+
+// list
+export async function listRopa(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  return api(qs ? `/admin/ropa?${qs}` : "/admin/ropa");
+}
+
+// create
+export async function createRopa(payload) {
+  return api("/admin/ropa", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+// get by id
+export async function getRopa(id) {
+  return api(`/admin/ropa/${id}`);
+}
+
+// save step
+export async function saveRopaStep(id, stepKey, payload) {
+  return api(`/admin/ropa/${id}/step/${stepKey}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+// submit
+export async function submitRopa(id) {
+  return api(`/admin/ropa/${id}/submit`, {
+    method: "POST",
+  });
+}

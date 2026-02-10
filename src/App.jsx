@@ -6,9 +6,11 @@ import User from "./pages/User";
 import RequireAuth from "./auth/RequireAuth";
 import AdminLayout from "./layouts/AdminLayout";
 import GapAssessment from "./pages/GapAssessment";
-import GapAssessmentDetails from "./pages/GapAssessmentDetails";
-import DpiaWizard from "./pages/DpiaWizard";
 import DpiaList from "./pages/DpiaList";
+import DpiaWizard from "./pages/DpiaWizard";
+import RopaList from "./pages/RopaList";
+import RopaWizard from "./pages/RopaWizard";
+
 
 export default function App() {
   return (
@@ -22,13 +24,13 @@ export default function App() {
           <Route path="/admin" element={<Admin />} />
           {/* GAP dynamic routes */}
           <Route path="/admin/gap" element={<GapAssessment />} />
-          <Route path="/admin/gap/:id" element={<GapAssessmentDetails />} />
-
           {/* DPIA dynamic routes */}
           <Route path="/admin/dpia" element={<DpiaList />} />
           <Route path="/admin/dpia/:id" element={<DpiaWizard />} />
-
-          <Route path="/admin/ropa" element={<Admin />} />
+          {/* ROPA dynamic routes */}
+          <Route path="/admin/ropa" element={<RopaList />} />
+          <Route path="/admin/ropa/:id" element={<RopaWizard />} />
+          
           <Route path="/admin/incidents" element={<Admin />} />
           <Route path="/admin/policies" element={<Admin />} />
           <Route path="/admin/training" element={<Admin />} />

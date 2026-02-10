@@ -12,11 +12,40 @@ import {
 } from "lucide-react";
 import Breadcrumbs from "./Breadcrumbs";
 
-function Item({ to, icon: Icon, label }) {
+// function Item({ to, icon: Icon, label }) {
+//   return (
+//     <NavLink
+//       to={to}
+//       end
+//       className={({ isActive }) =>
+//         [
+//           "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium",
+//           "transition-all duration-200",
+//           isActive
+//             ? "bg-blue-50 text-blue-800 ring-1 ring-blue-100"
+//             : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+//         ].join(" ")
+//       }
+//     >
+//       {/* left active indicator */}
+//       <span
+//         className={[
+//           "absolute left-1 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full",
+//           "transition-all duration-200",
+//           "bg-blue-600",
+//           "opacity-0 group-[.active]:opacity-100",
+//         ].join(" ")}
+//       />
+//       <Icon className="h-4 w-4 opacity-80 group-hover:opacity-100" />
+//       <span>{label}</span>
+//     </NavLink>
+//   );
+// }
+function Item({ to, icon: Icon, label, exact = false }) {
   return (
     <NavLink
       to={to}
-      end
+      end={exact}
       className={({ isActive }) =>
         [
           "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium",
@@ -27,12 +56,10 @@ function Item({ to, icon: Icon, label }) {
         ].join(" ")
       }
     >
-      {/* left active indicator */}
       <span
         className={[
           "absolute left-1 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full",
-          "transition-all duration-200",
-          "bg-blue-600",
+          "transition-all duration-200 bg-blue-600",
           "opacity-0 group-[.active]:opacity-100",
         ].join(" ")}
       />
@@ -51,7 +78,7 @@ export default function AdminLayout() {
     : pathname.startsWith("/admin/gap")
       ? "PDPL Gap Assessment"
       : pathname.startsWith("/admin/ropa")
-        ? "RoPA"
+        ? "ropa"
         : "Compliance Dashboard";
 
   return (

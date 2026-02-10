@@ -5,7 +5,7 @@ const labelMap = {
   admin: "Dashboard",
   gap: "PDPL Gap Assessment",
   dpia: "DPIA Assessment",
-  ropa: "RoPA",
+  ropa: "ropa",
   incidents: "Incidents & Breach",
   policies: "Policies & Procedures",
   training: "Training",

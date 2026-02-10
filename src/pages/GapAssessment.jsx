@@ -176,11 +176,11 @@ function FancyKpiTile({
   rightLines,
 }) {
   return (
-    <div className={["rounded-2xl border p-5 shadow-sm", bg].join(" ")}>
+    <div className={["rounded-2xl border px-5 py-2 shadow-sm", bg].join(" ")}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-lg font-semibold text-slate-900">{title}</div>
-          <div className="mt-1 text-sm text-slate-700">{subtitle}</div>
+          <div className="text-xl mt-1 font-semibold text-slate-900">{title}</div>
+          <div className="mt-1 text-sm text-slate-800">{subtitle}</div>
           <div className="mt-4 text-3xl font-bold text-slate-900">
             {valueText}
           </div>
@@ -200,10 +200,10 @@ function FancyKpiTile({
           ) : null}
         </div>
 
-        <div className="flex flex-col items-end gap-3">
+        <div className="flex flex-col items-end gap-5">
           {Icon ? (
-            <div className="rounded-2xl p-1 ring-1 ring-black/20">
-              <Icon className="h-7 w-7 text-slate-700" />
+            <div className=" p-1 ">
+              <Icon className="h-5 w-5 text-slate-700" />
             </div>
           ) : null}
           <Ring value={ringValue} tone={ringTone} />
@@ -434,7 +434,7 @@ export default function GapAssessment() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-sm text-slate-500">Assessments</div>
+          <div className="text-sm text-slate-500">GAP Assessments</div>
           <div className="text-2xl font-semibold text-slate-900">
             PDPL Gap Assessment
           </div>
@@ -474,7 +474,7 @@ export default function GapAssessment() {
           ringValue={avgProgress}
           ringTone="indigo"
           icon={ClipboardList}
-          bg="border-indigo-200 bg-indigo-50/70"
+          bg="border-indigo-100 bg-indigo-50/70 shadow-xl hover:bg-indigo-100/50 hover:border-indigo-300/70 hover:shadow-2xl transition"
         />
 
         <FancyKpiTile
@@ -484,17 +484,17 @@ export default function GapAssessment() {
           ringValue={total ? Math.round((inProgress / total) * 100) : 0}
           ringTone="amber"
           icon={RefreshCw}
-          bg="border-amber-200 bg-amber-50/70"
+          bg="border-amber-100 bg-amber-50/70 shadow-xl hover:bg-amber-100/50 hover:border-amber-300/70 hover:shadow-2xl transition"
         />
 
         <FancyKpiTile
           title="Completed"
-          subtitle="Delivered / closed loop"
+          subtitle="Delivered"
           valueText={`${completed}`}
           ringValue={total ? Math.round((completed / total) * 100) : 0}
           ringTone="emerald"
           icon={CheckCircle2}
-          bg="border-emerald-200 bg-emerald-50/70"
+          bg="border-green-100 bg-green-50/70 shadow-xl hover:bg-green-100/50 hover:border-green-300/70 hover:shadow-2xl transition"
         />
 
         <FancyKpiTile
@@ -504,7 +504,7 @@ export default function GapAssessment() {
           ringValue={total ? Math.round((critical / total) * 100) : 0}
           ringTone="rose"
           icon={AlertTriangle}
-          bg="border-rose-200 bg-rose-50/70"
+          bg="border-red-100 bg-red-50/70 shadow-xl hover:bg-red-100/50 hover:border-red-300/70 hover:shadow-2xl transition"
           // rightLines={[
           //   { label: "Draft", value: draft },
           //   { label: "In Progress", value: inProgress },
