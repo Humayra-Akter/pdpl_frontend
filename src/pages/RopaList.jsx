@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
-import { createRopa, listRopa } from "../lib/admin";
+import { createRopa, listRopa, deleteRopa } from "../lib/admin";
 
 function fmtDate(v) {
   try {
@@ -460,7 +460,15 @@ export default function RopaList() {
   const [newOwner, setNewOwner] = useState("");
   const [newDesc, setNewDesc] = useState("");
 
-  async function load(nextPage = page, nextQ = q) {
+  const [sortBy, setSortBy] = useState("updatedAt");
+  const [sortDir, setSortDir] = useState("desc");
+
+  async function load(
+    nextPage = page,
+    nextQ = q,
+    nextSortBy = sortBy,
+    nextSortDir = sortDir,
+  ) {
     setLoading(true);
     setErr("");
     try {
@@ -468,6 +476,8 @@ export default function RopaList() {
         page: nextPage,
         pageSize,
         q: (nextQ || "").trim() || "",
+        sortBy: nextSortBy,
+        sortDir: nextSortDir,
       });
 
       const nextItems = res?.items || res?.data || [];
@@ -482,6 +492,22 @@ export default function RopaList() {
       setErr(e?.message || "Failed to load RoPA list");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onDelete(id, title) {
+    const ok = window.confirm(
+      `Delete this RoPA?\n\n${title || "Untitled RoPA"}\n\nThis cannot be undone.`,
+    );
+    if (!ok) return;
+
+    setErr("");
+    try {
+      await deleteRopa(id);
+      // reload current page (or move back if page becomes empty)
+      load(page, q);
+    } catch (e) {
+      setErr(e?.message || "Failed to delete RoPA");
     }
   }
 
@@ -600,12 +626,12 @@ export default function RopaList() {
               {/* Search (full width) */}
               <div className="w-full">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-800" />
                   <input
                     className={[
-                      "w-full rounded-2xl border border-slate-200 bg-white",
+                      "w-full rounded-xl ring ring-slate-200 bg-white",
                       "pl-9 pr-10 py-2.5 text-sm font-medium outline-none",
-                      "focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100",
+                      "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
                       "shadow-sm",
                     ].join(" ")}
                     placeholder="Search RoPA by title..."
@@ -622,7 +648,7 @@ export default function RopaList() {
                         setPage(1);
                         load(1, "");
                       }}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-8 w-8 items-center justify-center rounded-xl hover:bg-slate-50 text-slate-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-5 w-8 items-center justify-center rounded-xl hover:bg-slate-50 text-slate-600"
                       aria-label="Clear search"
                     >
                       <X className="h-4 w-4" />
@@ -642,6 +668,47 @@ export default function RopaList() {
                   >
                     Apply
                   </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <div className="text-xs font-semibold text-slate-600 mb-1">
+                    Sort by
+                  </div>
+                  <select
+                    className="w-full rounded-lg ring ring-slate-200 bg-white px-2 py-1 text-sm font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-indigo-100 focus:border-indigo-300"
+                    value={sortBy}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setSortBy(v);
+                      setPage(1);
+                      load(1, q, v, sortDir);
+                    }}
+                  >
+                    <option value="updatedAt">Updated time</option>
+                    <option value="title">Title</option>
+                    <option value="createdAt">Created time</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold text-slate-600 mb-1">
+                    Order
+                  </div>
+                  <select
+                    className="w-full rounded-lg ring ring-slate-200 bg-white px-2 py-1 text-sm font-semibold text-slate-800 outline-none focus:ring-1 focus:ring-indigo-100 focus:border-indigo-300"
+                    value={sortDir}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setSortDir(v);
+                      setPage(1);
+                      load(1, q, sortBy, v);
+                    }}
+                  >
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -806,16 +873,29 @@ export default function RopaList() {
                         {fmtDate(x.updatedAt || x.createdAt)}
                       </td>
 
-                      <td className="px-5 py-4 text-right">
-                        <button
-                          onClick={() => nav(`/admin/ropa/${x.id}`)}
-                          className={[
-                            "inline-flex w-[120px] items-center justify-center rounded-xl px-4 py-2 text-xs font-semibold text-white",
-                            "bg-indigo-600 hover:bg-indigo-700 shadow-sm transition",
-                          ].join(" ")}
-                        >
-                          Open →
-                        </button>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => nav(`/admin/ropa/${x.id}`)}
+                            className={[
+                              "inline-flex w-16 items-center justify-center rounded-xl px-2 py-1 text-xs font-semibold text-white",
+                              "bg-indigo-600 hover:bg-indigo-700 shadow-sm transition",
+                            ].join(" ")}
+                          >
+                            Open →
+                          </button>
+
+                          <button
+                            onClick={() => onDelete(x.id, x.title)}
+                            className={[
+                              "inline-flex items-center justify-center rounded-xl px-2 py-1 text-xs font-semibold",
+                              "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition",
+                            ].join(" ")}
+                            title="Delete"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -832,7 +912,7 @@ export default function RopaList() {
             totalPages={totalPages}
             onPage={(p) => {
               setPage(p);
-              if (usingServerPaging) load(p, q);
+              if (usingServerPaging) load(p, q, sortBy, sortDir);
             }}
           />
         </div>

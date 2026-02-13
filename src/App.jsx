@@ -10,7 +10,8 @@ import DpiaList from "./pages/DpiaList";
 import DpiaWizard from "./pages/DpiaWizard";
 import RopaList from "./pages/RopaList";
 import RopaWizard from "./pages/RopaWizard";
-
+import IncidentsList from "./pages/IncidentsList";
+import IncidentDetails from "./pages/IncidentDetails";
 
 export default function App() {
   return (
@@ -30,8 +31,10 @@ export default function App() {
           {/* ROPA dynamic routes */}
           <Route path="/admin/ropa" element={<RopaList />} />
           <Route path="/admin/ropa/:id" element={<RopaWizard />} />
-          
-          <Route path="/admin/incidents" element={<Admin />} />
+
+          {/* Incidents & Breach dynamic routes */}
+          <Route path="/admin/incidents" element={<IncidentsList />} />
+          <Route path="/admin/incidents/:id" element={<IncidentDetails />} />
           <Route path="/admin/policies" element={<Admin />} />
           <Route path="/admin/training" element={<Admin />} />
           <Route path="/admin/users" element={<Admin />} />
