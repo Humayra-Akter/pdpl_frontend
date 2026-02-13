@@ -181,3 +181,37 @@ export async function addIncidentComment(id, payload) {
     body: JSON.stringify(payload),
   });
 }
+// audit
+export async function listIncidentAudit(id) {
+  return api(`/admin/incidents/${id}/audit`);
+}
+
+
+// ---------------- VENDOR CHECKLIST ----------------
+
+export async function listVendor(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  return api(qs ? `/admin/vendor?${qs}` : "/admin/vendor");
+}
+
+export async function createVendor(payload) {
+  return api("/admin/vendor", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getVendor(id) {
+  return api(`/admin/vendor/${id}`);
+}
+
+export async function saveVendorStep(id, stepKey, payload) {
+  return api(`/admin/vendor/${id}/step/${stepKey}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function submitVendor(id) {
+  return api(`/admin/vendor/${id}/submit`, { method: "POST" });
+}

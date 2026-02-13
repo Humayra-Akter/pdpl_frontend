@@ -134,7 +134,7 @@ export default function AdminLayout() {
                   label="Incidents & Breach"
                 />
                 <Item
-                  to="/admin/policies"
+                  to="/admin/vendor"
                   icon={BookOpen}
                   label="Policies & Procedures"
                 />

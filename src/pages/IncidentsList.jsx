@@ -242,7 +242,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon, total = 0 }) {
 
       <div className="mt-3 flex items-end justify-between">
         <div
-          className={["text-3xl font-extrabold leading-none", t.value].join(
+          className={["text-3xl font-bold leading-none", t.value].join(
             " ",
           )}
         >
