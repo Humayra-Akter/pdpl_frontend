@@ -215,3 +215,106 @@ export async function saveVendorStep(id, stepKey, payload) {
 export async function submitVendor(id) {
   return api(`/admin/vendor/${id}/submit`, { method: "POST" });
 }
+
+// ---------------- TRAINING ----------------
+
+// list trainings (admin/dpo)
+export async function listTraining(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  return api(qs ? `/admin/training?${qs}` : "/admin/training");
+}
+
+// create training (admin)
+export async function createTraining(payload) {
+  return api("/admin/training", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+// get by id
+export async function getTraining(id) {
+  return api(`/admin/training/${id}`);
+}
+
+// update meta
+export async function updateTraining(id, payload) {
+  return api(`/admin/training/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+// workflow
+export async function submitTrainingForApproval(id) {
+  return api(`/admin/training/${id}/submit`, { method: "POST" });
+}
+
+export async function approveTraining(id) {
+  return api(`/admin/training/${id}/approve`, { method: "POST" });
+}
+
+export async function publishTraining(id) {
+  return api(`/admin/training/${id}/publish`, { method: "POST" });
+}
+
+export async function archiveTraining(id) {
+  return api(`/admin/training/${id}/archive`, { method: "POST" });
+}
+
+// modules
+export async function addTrainingModule(id, payload) {
+  return api(`/admin/training/${id}/modules`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+export async function updateTrainingModule(id, moduleId, payload) {
+  return api(`/admin/training/${id}/modules/${moduleId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+export async function deleteTrainingModule(id, moduleId) {
+  return api(`/admin/training/${id}/modules/${moduleId}`, { method: "DELETE" });
+}
+
+// questions
+export async function addTrainingQuestion(id, payload) {
+  return api(`/admin/training/${id}/questions`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+export async function updateTrainingQuestion(id, questionId, payload) {
+  return api(`/admin/training/${id}/questions/${questionId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+export async function deleteTrainingQuestion(id, questionId) {
+  return api(`/admin/training/${id}/questions/${questionId}`, { method: "DELETE" });
+}
+
+// assign to entire org
+export async function assignTrainingAll(id) {
+  return api(`/admin/training/${id}/assign-all`, { method: "POST" });
+}
+
+// assignments list (admin/dpo)
+export async function listTrainingAssignments(id, params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  return api(qs ? `/admin/training/${id}/assignments?${qs}` : `/admin/training/${id}/assignments`);
+}
+
+// user actions (still under /admin routes in this design)
+export async function startTrainingAssignment(trainingId, assignmentId) {
+  return api(`/admin/training/${trainingId}/assignment/${assignmentId}/start`, { method: "POST" });
+}
+
+export async function submitTrainingQuiz(trainingId, assignmentId, payload) {
+  return api(`/admin/training/${trainingId}/assignment/${assignmentId}/submit-quiz`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
