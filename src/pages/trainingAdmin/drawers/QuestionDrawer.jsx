@@ -1,25 +1,76 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Drawer, Field } from "../ui/atoms";
 import { cn } from "../utils";
 import { DIFFICULTY } from "../constants";
 
-export function QuestionDrawer({ open, onClose, onSave }) {
+/**
+ * Props:
+ * - open: boolean
+ * - onClose: fn
+ * - onSave: fn(payload) -> parent does API call
+ * - initialQuestion: optional question object from questionBank (for edit)
+ *
+ * initialQuestion expected shape (same as your questionBank items):
+ * {
+ *   id,
+ *   trainingId,
+ *   text,
+ *   difficulty,
+ *   tags: [],
+ *   options: [],
+ *   answerIndex
+ * }
+ */
+export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
+  const isEdit = Boolean(initialQuestion?.id);
+
   const [text, setText] = useState("");
   const [difficulty, setDifficulty] = useState("EASY");
   const [tags, setTags] = useState("fundamentals");
   const [options, setOptions] = useState(["", "", "", ""]);
   const [answerIndex, setAnswerIndex] = useState(0);
 
+  // Prefill when editing
+  useEffect(() => {
+    if (!open) return;
+
+    if (initialQuestion) {
+      setText(initialQuestion.text || "");
+      setDifficulty(initialQuestion.difficulty || "EASY");
+      setTags((initialQuestion.tags || []).join(", "));
+      const opts = Array.isArray(initialQuestion.options)
+        ? initialQuestion.options
+        : [];
+      setOptions([opts[0] || "", opts[1] || "", opts[2] || "", opts[3] || ""]);
+      setAnswerIndex(
+        Number.isFinite(initialQuestion.answerIndex)
+          ? Number(initialQuestion.answerIndex)
+          : 0,
+      );
+      return;
+    }
+
+    // create mode reset
+    setText("");
+    setDifficulty("EASY");
+    setTags("fundamentals");
+    setOptions(["", "", "", ""]);
+    setAnswerIndex(0);
+  }, [open, initialQuestion]);
+
   const errors = useMemo(() => {
     const e = {};
     if (!text.trim()) e.text = "Question text is required.";
+
     const cleanOpts = options.map((o) => (o || "").trim());
     if (cleanOpts.filter(Boolean).length < 2)
       e.options = "Provide at least 2 answer options.";
-    if (answerIndex < 0 || answerIndex > 3)
+
+    const ai = Number(answerIndex);
+    if (!Number.isFinite(ai) || ai < 0 || ai > 3)
       e.answerIndex = "Pick a correct answer.";
-    if (!cleanOpts[answerIndex])
-      e.answerIndex = "Correct answer must not be empty.";
+    if (!cleanOpts[ai]) e.answerIndex = "Correct answer must not be empty.";
+
     return e;
   }, [text, options, answerIndex]);
 
@@ -33,18 +84,14 @@ export function QuestionDrawer({ open, onClose, onSave }) {
     });
   }
 
-  function reset() {
-    setText("");
-    setDifficulty("EASY");
-    setTags("fundamentals");
-    setOptions(["", "", "", ""]);
-    setAnswerIndex(0);
-  }
-
   function handleSave() {
     if (!canSave) return;
 
-    const q = {
+    const payload = {
+      // include ids for edit mode
+      id: initialQuestion?.id,
+      trainingId: initialQuestion?.trainingId,
+
       text: text.trim(),
       difficulty,
       tags: tags
@@ -55,49 +102,42 @@ export function QuestionDrawer({ open, onClose, onSave }) {
       answerIndex: Number(answerIndex),
     };
 
-    onSave?.(q);
-    reset();
+    onSave?.(payload);
   }
 
   return (
     <Drawer
       open={open}
       onClose={onClose}
-      title="Create Question"
-      subtitle="Add a reusable MCQ to the question bank"
+      title={isEdit ? "Edit Question" : "Create Question"}
+      subtitle={
+        isEdit
+          ? "Update MCQ options and correct answer"
+          : "Add a reusable MCQ to the question bank"
+      }
       footer={
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-end gap-2">
           <button
-            onClick={reset}
+            onClick={onClose}
             className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
-            Reset
+            Cancel
           </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-              type="button"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={handleSave}
-              disabled={!canSave}
-              className={cn(
-                "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
-                canSave
-                  ? "bg-indigo-600 hover:bg-indigo-700"
-                  : "bg-slate-300 cursor-not-allowed",
-              )}
-              type="button"
-            >
-              Save Question
-            </button>
-          </div>
+          <button
+            onClick={handleSave}
+            disabled={!canSave}
+            className={cn(
+              "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
+              canSave
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-slate-300 cursor-not-allowed",
+            )}
+            type="button"
+          >
+            {isEdit ? "Save Changes" : "Save Question"}
+          </button>
         </div>
       }
     >

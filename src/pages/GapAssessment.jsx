@@ -131,7 +131,7 @@ function Ring({ value = 0, tone = "indigo" }) {
   };
 
   return (
-    <svg width="88" height="88" viewBox="0 0 88 88">
+    <svg width="77" height="77" viewBox="0 0 88 88">
       <circle
         cx="44"
         cy="44"
@@ -179,18 +179,20 @@ function FancyKpiTile({
     <div className={["rounded-2xl border px-5 py-2 shadow-sm", bg].join(" ")}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-xl mt-1 font-semibold text-slate-900">{title}</div>
+          <div className="text-xl mt-1 font-semibold text-slate-900">
+            {title}
+          </div>
           <div className="mt-1 text-sm text-slate-800">{subtitle}</div>
           <div className="mt-4 text-3xl font-bold text-slate-900">
             {valueText}
           </div>
 
           {rightLines ? (
-            <div className="mt-4 space-y-1.5 text-sm">
+            <div className="mt-1 space-y-1 text-sm">
               {rightLines.map((x) => (
                 <div
                   key={x.label}
-                  className="flex items-center justify-between gap-3"
+                  className="flex items-center justify-between gap-2"
                 >
                   <span className="text-slate-700">{x.label}</span>
                   <span className="font-bold text-slate-900">{x.value}</span>

@@ -35,35 +35,35 @@ function SectionTitle({ title, subtitle, right }) {
 function KpiCard({ title, value, hint, tone, icon: Icon }) {
   const tones = {
     indigo: {
-      wrap: "bg-indigo-50 ring-indigo-200",
+      wrap: "bg-indigo-50 ring-indigo-200 shadow-md hover:shadow-lg hover:bg-indigo-100/70",
       title: "text-indigo-900",
       hint: "text-indigo-900/70",
       value: "text-indigo-950",
       iconWrap: "bg-indigo-100 text-indigo-700 ring-indigo-200",
     },
     amber: {
-      wrap: "bg-amber-50 ring-amber-200",
+      wrap: "bg-amber-50 ring-amber-200 shadow-md hover:shadow-lg hover:bg-amber-100/70",
       title: "text-amber-900",
       hint: "text-amber-900/70",
       value: "text-amber-950",
       iconWrap: "bg-amber-100 text-amber-700 ring-amber-200",
     },
     emerald: {
-      wrap: "bg-emerald-50 ring-emerald-200",
+      wrap: "bg-emerald-50 ring-emerald-200 shadow-md hover:shadow-lg hover:bg-emerald-100/70",
       title: "text-emerald-900",
       hint: "text-emerald-900/70",
       value: "text-emerald-950",
       iconWrap: "bg-emerald-100 text-emerald-700 ring-emerald-200",
     },
     rose: {
-      wrap: "bg-rose-50 ring-rose-200",
+      wrap: "bg-rose-50 ring-rose-200 shadow-md hover:shadow-lg hover:bg-rose-100/70",
       title: "text-rose-900",
       hint: "text-rose-900/70",
       value: "text-rose-950",
       iconWrap: "bg-rose-100 text-rose-700 ring-rose-200",
     },
     slate: {
-      wrap: "bg-slate-50 ring-slate-200",
+      wrap: "bg-slate-50 ring-slate-200 shadow-md hover:shadow-lg hover:bg-slate-100/70",
       title: "text-slate-900",
       hint: "text-slate-600",
       value: "text-slate-950",

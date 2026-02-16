@@ -4,7 +4,13 @@ import { Card, SectionTitle } from "../ui/atoms";
 import { cn, pillTone } from "../utils";
 import { DIFFICULTY } from "../constants";
 
-export function QuestionBankPanel({ questionBank, onCreate, onUpsert }) {
+export function QuestionBankPanel({
+  questionBank = [],
+  onCreate,
+  onUpsert, // kept (not used here), so parent won't break
+  onEdit,
+  onDelete,
+}) {
   const [q, setQ] = useState("");
   const [tag, setTag] = useState("ALL");
   const [difficulty, setDifficulty] = useState("ALL");
@@ -19,8 +25,11 @@ export function QuestionBankPanel({ questionBank, onCreate, onUpsert }) {
     let xs = [...questionBank];
 
     if (q.trim()) {
+      const needle = q.trim().toLowerCase();
       xs = xs.filter((x) =>
-        x.text.toLowerCase().includes(q.trim().toLowerCase()),
+        String(x.text || "")
+          .toLowerCase()
+          .includes(needle),
       );
     }
 
@@ -42,7 +51,7 @@ export function QuestionBankPanel({ questionBank, onCreate, onUpsert }) {
         subtitle="Create reusable MCQs • tag by topic • attach to quizzes"
         right={
           <button
-            onClick={onCreate}
+            onClick={() => onCreate?.()}
             className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700"
             type="button"
           >
@@ -110,6 +119,7 @@ export function QuestionBankPanel({ questionBank, onCreate, onUpsert }) {
                   <th className="px-5 py-3">Difficulty</th>
                   <th className="px-5 py-3">Tags</th>
                   <th className="px-5 py-3">Answer</th>
+                  <th className="px-5 py-3 text-right">Action</th>
                 </tr>
               </thead>
 
@@ -142,26 +152,52 @@ export function QuestionBankPanel({ questionBank, onCreate, onUpsert }) {
                       </td>
 
                       <td className="px-5 py-4">
-                        <div className="flex flex-wrap gap-2">
-                          {(x.tags || []).map((t) => (
-                            <span
-                              key={t}
-                              className="inline-flex rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
+                        {x.tags?.length ? (
+                          <div className="flex flex-wrap gap-2">
+                            {x.tags.map((t) => (
+                              <span
+                                key={t}
+                                className="inline-flex rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm font-semibold text-slate-500">
+                            —
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
                         {x.options?.[x.answerIndex] ?? "—"}
                       </td>
+
+                      <td className="px-5 py-4 text-right">
+                        <div className="inline-flex gap-2">
+                          <button
+                            onClick={() => onEdit?.(x)}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50"
+                            type="button"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => onDelete?.(x)}
+                            className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100"
+                            type="button"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="px-5 py-10">
+                    <td colSpan={5} className="px-5 py-10">
                       <div className="text-sm font-bold text-slate-900">
                         No matching questions
                       </div>

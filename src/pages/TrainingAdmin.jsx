@@ -38,6 +38,8 @@ import {
   addTrainingQuestion,
   assignTrainingAll,
   listTrainingAssignments,
+  updateTrainingQuestion,
+  deleteTrainingQuestion,
 } from "../lib/admin";
 
 import { Card, SectionTitle } from "./trainingAdmin/ui/atoms";
@@ -46,7 +48,7 @@ import { KpiCard } from "./trainingAdmin/ui/atoms";
 import { ConfirmModal } from "./trainingAdmin/ui/atoms";
 import { ActionButton } from "./trainingAdmin/ui/atoms";
 import { RuleRow } from "./trainingAdmin/ui/atoms";
-
+import { deleteTraining as deleteTrainingApi } from "../lib/admin";
 import { DashboardPanel } from "./trainingAdmin/panels/DashboardPanel";
 import { TrainingsPanel } from "./trainingAdmin/panels/TrainingsPanel";
 import { QuestionBankPanel } from "./trainingAdmin/panels/QuestionBankPanel";
@@ -91,6 +93,7 @@ export default function TrainingAdmin() {
   const [openAssign, setOpenAssign] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [editingQuestion, setEditingQuestion] = useState(null);
 
   // selected training in builder/assign
   const [selectedTrainingId, setSelectedTrainingId] = useState(null);
@@ -129,6 +132,50 @@ export default function TrainingAdmin() {
 
     return map;
   }, [data.assignments]);
+
+  useEffect(() => {
+    if (tab !== "QUESTIONS") return;
+
+    (async () => {
+      try {
+        // If no trainings, nothing to load
+        if (!data.trainings.length) {
+          setData((p) => ({ ...p, questionBank: [] }));
+          return;
+        }
+
+        // Fetch details for trainings (so we get questions)
+        const details = await Promise.all(
+          data.trainings.map((t) => getTraining(t.id).catch(() => null)),
+        );
+
+        const all = [];
+        for (const full of details) {
+          if (!full) continue;
+          for (const q of full.questions || []) {
+            all.push({
+              id: q.id,
+              trainingId: full.id, // IMPORTANT so edit/delete works
+              text: q.prompt,
+              difficulty: "EASY",
+              tags: [],
+              type: q.type,
+              options: (q.options || []).map((o) => o.text),
+              answerIndex: q.correctOptionId
+                ? (q.options || []).findIndex((o) => o.id === q.correctOptionId)
+                : 0,
+            });
+          }
+        }
+
+        setData((p) => ({ ...p, questionBank: all }));
+      } catch (e) {
+        console.error(e);
+        alert(e?.message || "Failed to load question bank");
+      }
+    })();
+  }, [tab, data.trainings]);
+
 
   const kpis = useMemo(() => {
     const published = data.trainings.filter(
@@ -241,6 +288,20 @@ export default function TrainingAdmin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function mapDbQuestionToUi(q) {
+    return {
+      id: q.id,
+      text: q.prompt,
+      difficulty: "EASY",
+      tags: [],
+      type: q.type,
+      options: (q.options || []).map((o) => o.text),
+      answerIndex: q.correctOptionId
+        ? (q.options || []).findIndex((o) => o.id === q.correctOptionId)
+        : 0,
+    };
+  }
+
   async function openTrainingBuilder(trainingId) {
     setSelectedTrainingId(trainingId);
     setOpenBuilder(true);
@@ -270,7 +331,6 @@ export default function TrainingAdmin() {
       alert(e?.message || "Failed to load training");
     }
   }
-
 
   function openAssignment(trainingId) {
     setSelectedTrainingId(trainingId);
@@ -574,29 +634,34 @@ export default function TrainingAdmin() {
           {tab === "QUESTIONS" ? (
             <QuestionBankPanel
               questionBank={data.questionBank}
-              onCreate={() => setOpenQuestion(true)}
-              onUpsert={(qItem) => {
-                setData((prev) => {
-                  const exists = prev.questionBank.find(
-                    (x) => x.id === qItem.id,
-                  );
-                  return {
-                    ...prev,
-                    questionBank: exists
-                      ? prev.questionBank.map((x) =>
-                          x.id === qItem.id ? qItem : x,
-                        )
-                      : [qItem, ...prev.questionBank],
-                  };
-                });
+              onCreate={() => {
+                setEditingQuestion(null);
+                setOpenQuestion(true);
+              }}
+              onEdit={(qItem) => {
+                setEditingQuestion(qItem);
+                setSelectedTrainingId(qItem.trainingId);
+                setOpenQuestion(true);
+              }}
+              onDelete={async (qItem) => {
+                if (!qItem?.id || !qItem?.trainingId) return;
+                const ok = window.confirm("Delete this question?");
+                if (!ok) return;
 
-                addAudit(
-                  "Admin",
-                  existsIn(data.questionBank, qItem.id)
-                    ? "Updated question"
-                    : "Created question",
-                  qItem.text,
-                );
+                try {
+                  await deleteTrainingQuestion(qItem.trainingId, qItem.id);
+                  // remove locally
+                  setData((p) => ({
+                    ...p,
+                    questionBank: p.questionBank.filter(
+                      (x) => x.id !== qItem.id,
+                    ),
+                  }));
+                  addAudit("Admin", "Deleted question", qItem.text);
+                } catch (e) {
+                  console.error(e);
+                  alert(e?.message || "Failed to delete question");
+                }
               }}
             />
           ) : null}
@@ -836,57 +901,69 @@ export default function TrainingAdmin() {
       {/* Question Drawer */}
       <QuestionDrawer
         open={openQuestion}
-        onClose={() => setOpenQuestion(false)}
+        onClose={() => {
+          setOpenQuestion(false);
+          setEditingQuestion(null);
+        }}
+        initialQuestion={editingQuestion}
         onSave={async (qItem) => {
-          const trainingId = selectedTrainingId || data.trainings[0]?.id;
+          // Decide trainingId:
+          // - edit mode uses qItem.trainingId
+          // - create mode uses selectedTrainingId or first training
+          const trainingId =
+            qItem.trainingId || selectedTrainingId || data.trainings[0]?.id;
+
           if (!trainingId) {
             alert("Create/select a training first.");
             return;
           }
 
+          const payload = {
+            type: "MCQ",
+            prompt: qItem.text,
+            options: (qItem.options || []).map((text, idx) => ({
+              label: String.fromCharCode(65 + idx),
+              text,
+            })),
+            correctIndex: qItem.answerIndex,
+            points: 1,
+          };
+
           try {
-            const payload = {
-              type: "MCQ",
-              prompt: qItem.text,
-              options: (qItem.options || []).map((text, idx) => ({
-                label: String.fromCharCode(65 + idx),
-                text,
-              })),
-              correctIndex: qItem.answerIndex,
-              points: 1,
-            };
+            if (qItem.id) {
+              await updateTrainingQuestion(trainingId, qItem.id, payload);
+              addAudit("Admin", "Updated question", qItem.text);
+            } else {
+              await addTrainingQuestion(trainingId, payload);
+              addAudit("Admin", "Created question", qItem.text);
+            }
 
-            await addTrainingQuestion(trainingId, payload);
-
-            // Reload training detail so quiz count updates
+            // Reload this training and rebuild questionBank (simple + accurate)
             const fresh = await getTraining(trainingId);
-            const ui = trainingDbToUi(fresh);
 
-            setData((prev) => ({
-              ...prev,
-              trainings: prev.trainings.map((t) =>
-                t.id === trainingId ? ui : t,
-              ),
-              questionBank: (fresh.questions || []).map((q) => ({
-                id: q.id,
-                text: q.prompt,
-                difficulty: "EASY",
-                tags: [],
-                type: q.type,
-                options: (q.options || []).map((o) => o.text),
-                answerIndex: q.correctOptionId
-                  ? (q.options || []).findIndex(
-                      (o) => o.id === q.correctOptionId,
-                    )
-                  : 0,
-              })),
+            const rebuilt = (fresh.questions || []).map((q) => ({
+              id: q.id,
+              trainingId,
+              text: q.prompt,
+              difficulty: "EASY",
+              tags: [],
+              type: q.type,
+              options: (q.options || []).map((o) => o.text),
+              answerIndex: q.correctOptionId
+                ? (q.options || []).findIndex((o) => o.id === q.correctOptionId)
+                : 0,
             }));
 
-            addAudit("Admin", "Created question", qItem.text);
+            setData((p) => ({
+              ...p,
+              questionBank: rebuilt,
+            }));
+
             setOpenQuestion(false);
+            setEditingQuestion(null);
           } catch (e) {
             console.error(e);
-            alert(e?.message || "Failed to add question");
+            alert(e?.message || "Failed to save question");
           }
         }}
       />
@@ -964,14 +1041,17 @@ export default function TrainingAdmin() {
         title="Delete training?"
         body="This will remove the training and all assignment records for it. (Audit logs remain if you keep them.)"
         onCancel={() => setConfirmDelete(null)}
-        onConfirm={() => {
+        onConfirm={async () => {
           const id = confirmDelete?.id;
-          if (id) {
-            const title = data.trainings.find((t) => t.id === id)?.title || id;
-            deleteTraining(id);
-            addAudit("Admin", "Deleted training", title);
+          if (!id) return;
+
+          try {
+            await deleteTrainingApi(id);
+            setConfirmDelete(null);
+            await refresh();
+          } catch (e) {
+            alert(e?.message || "Failed to delete training");
           }
-          setConfirmDelete(null);
         }}
         confirmText="Delete"
       />

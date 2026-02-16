@@ -15,6 +15,8 @@ import IncidentDetails from "./pages/IncidentDetails";
 import VendorList from "./pages/VendorList";
 import VendorWizard from "./pages/VendorWizard";
 import TrainingAdmin from "./pages/TrainingAdmin";
+import UserManagement from "./pages/UserManagement";
+import UserDetails from "./pages/UserDetails";
 
 export default function App() {
   return (
@@ -45,7 +47,10 @@ export default function App() {
 
           {/* training dynamic routes */}
           <Route path="/admin/training" element={<TrainingAdmin />} />
-          <Route path="/admin/users" element={<Admin />} />
+
+          {/* Users */}
+          <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/users/:id" element={<UserDetails />} />
         </Route>
       </Route>
 
