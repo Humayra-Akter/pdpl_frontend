@@ -183,25 +183,94 @@ export default function TrainingAdmin() {
   async function refresh() {
     setLoading(true);
     try {
-      // TODO: API fetch:
-      // const res = await getTrainingDashboard();
-      // setData(res);
-      await new Promise((r) => setTimeout(r, 350));
-      setData((d) => ({ ...d })); // keep same mock, just to show loading
+      // Optional: server-side filter + search
+      const params = {};
+      if (status !== "ALL") params.status = uiStatusToDb(status);
+      if (q.trim()) params.search = q.trim();
+
+      const res = await listTrainings(params); // { items }
+      const items = res.items || [];
+
+      // list endpoint doesn't include createdBy/modules/questions, so map minimal
+      const trainingsUi = items.map((t) =>
+        trainingDbToUi({
+          ...t,
+          createdBy: null,
+          approvedBy: null,
+          modules: [],
+          questions: [],
+        }),
+      );
+
+      // Fetch assignments only for PUBLISHED trainings so KPIs work
+      const publishedIds = items
+        .filter((t) => t.status === "PUBLISHED")
+        .map((t) => t.id);
+
+      const assignmentsChunks = await Promise.all(
+        publishedIds.map((id) =>
+          listTrainingAssignments(id).catch(() => ({ items: [] })),
+        ),
+      );
+
+      const assignmentsFlat = assignmentsChunks
+        .flatMap((x) => x.items || [])
+        .map((a) => ({
+          id: a.id,
+          trainingId: a.trainingId,
+          userId: a.userId,
+          status: a.status === "ASSIGNED" ? "NOT_STARTED" : a.status,
+          score: a.score,
+          completedAt: a.completedAt,
+          dueAt: a.dueAt,
+          user: a.user, // backend include user
+        }));
+
+      setData((prev) => ({
+        ...prev,
+        trainings: trainingsUi,
+        assignments: assignmentsFlat,
+      }));
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    // initial load
-    // TODO: API
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function openTrainingBuilder(trainingId) {
+  async function openTrainingBuilder(trainingId) {
     setSelectedTrainingId(trainingId);
     setOpenBuilder(true);
+
+    try {
+      const full = await getTraining(trainingId); // includes modules/questions/createdBy/approvedBy
+      const ui = trainingDbToUi(full);
+
+      setData((prev) => ({
+        ...prev,
+        trainings: prev.trainings.map((t) => (t.id === trainingId ? ui : t)),
+        // OPTIONAL: build question bank from this training’s questions when builder opened
+        questionBank: (full.questions || []).map((q) => ({
+          id: q.id,
+          text: q.prompt,
+          difficulty: "EASY",
+          tags: [],
+          type: q.type,
+          options: (q.options || []).map((o) => o.text),
+          answerIndex: q.correctOptionId
+            ? (q.options || []).findIndex((o) => o.id === q.correctOptionId)
+            : 0,
+        })),
+      }));
+    } catch (e) {
+      console.error(e);
+      alert(e?.message || "Failed to load training");
+    }
   }
+
 
   function openAssignment(trainingId) {
     setSelectedTrainingId(trainingId);
@@ -543,20 +612,27 @@ export default function TrainingAdmin() {
           {tab === "APPROVALS" ? (
             <ApprovalsPanel
               trainings={data.trainings}
-              onApprove={(id) => {
-                updateTraining(id, { status: "PUBLISHED", approvedBy: "DPO" });
-                addAudit(
-                  "DPO",
-                  "Approved training",
-                  data.trainings.find((t) => t.id === id)?.title || id,
-                );
+              onApprove={async (id) => {
+                try {
+                  await approveTraining(id); // DPO
+                  // If the current user is ADMIN too, publish will succeed; otherwise ignore
+                  try {
+                    await publishTraining(id);
+                  } catch {}
+                  addAudit(
+                    "DPO",
+                    "Approved training",
+                    data.trainings.find((t) => t.id === id)?.title || id,
+                  );
+                  await refresh();
+                } catch (e) {
+                  console.error(e);
+                  alert(e?.message || "Approval failed");
+                }
               }}
-              onReject={(id) => {
-                updateTraining(id, { status: "DRAFT" });
-                addAudit(
-                  "DPO",
-                  "Rejected training",
-                  data.trainings.find((t) => t.id === id)?.title || id,
+              onReject={async (id) => {
+                alert(
+                  "Reject endpoint is not implemented for training yet. Add /training/:id/reject if needed.",
                 );
               }}
               onOpenBuilder={(id) => openTrainingBuilder(id)}
@@ -657,11 +733,16 @@ export default function TrainingAdmin() {
       <CreateTrainingDrawer
         open={openCreate}
         onClose={() => setOpenCreate(false)}
-        onCreate={(t) => {
-          addTraining(t);
-          addAudit("Admin", "Created training", t.title);
-          setOpenCreate(false);
-          setTab("TRAININGS");
+        onCreate={async (t) => {
+          try {
+            await createTraining(trainingUiToDbPatch(t));
+            setOpenCreate(false);
+            setTab("TRAININGS");
+            await refresh();
+          } catch (e) {
+            console.error(e);
+            alert(e?.message || "Failed to create training");
+          }
         }}
       />
 
@@ -670,25 +751,85 @@ export default function TrainingAdmin() {
         open={openBuilder}
         training={selectedTraining()}
         onClose={() => setOpenBuilder(false)}
-        onSave={(patch) => {
+        onSave={async (fullUiTraining) => {
           if (!selectedTrainingId) return;
-          updateTraining(selectedTrainingId, patch);
-          addAudit(
-            "Admin",
-            "Updated training",
-            selectedTraining()?.title || selectedTrainingId,
-          );
+
+          try {
+            // 1) Update training meta
+            await updateTrainingApi(
+              selectedTrainingId,
+              trainingUiToDbPatch(fullUiTraining),
+            );
+
+            // 2) Sync modules
+            const existing = await getTraining(selectedTrainingId);
+            const existingMods = existing.modules || [];
+
+            const nextMods = fullUiTraining.modules || [];
+
+            const existingById = new Map(existingMods.map((m) => [m.id, m]));
+            const nextById = new Map(
+              nextMods.filter((m) => m.id).map((m) => [m.id, m]),
+            );
+
+            // deleted = in existing but not in next
+            const toDelete = existingMods.filter((m) => !nextById.has(m.id));
+
+            // upsert
+            for (const m of nextMods) {
+              const payload = {
+                title: m.title,
+                type: uiModuleTypeToDb(m.contentType),
+                description: m.description || null,
+                externalUrl: m.externalUrl || null,
+                fileAssetId: m.fileAssetId || null,
+                sortOrder: m.sortOrder ?? 0,
+              };
+
+              // if exists in DB -> update, else create
+              if (m.id && existingById.has(m.id)) {
+                await updateTrainingModule(selectedTrainingId, m.id, payload);
+              } else {
+                await addTrainingModule(selectedTrainingId, payload);
+              }
+            }
+
+            for (const m of toDelete) {
+              await deleteTrainingModule(selectedTrainingId, m.id);
+            }
+
+            // 3) Reload the full training and update UI state
+            const fresh = await getTraining(selectedTrainingId);
+            const ui = trainingDbToUi(fresh);
+
+            setData((prev) => ({
+              ...prev,
+              trainings: prev.trainings.map((t) =>
+                t.id === selectedTrainingId ? ui : t,
+              ),
+            }));
+
+            // optional local audit
+            addAudit("Admin", "Updated training", ui.title);
+          } catch (e) {
+            console.error(e);
+            alert(e?.message || "Failed to save training");
+          }
         }}
-        onRequestApproval={() => {
+        onRequestApproval={async () => {
           if (!selectedTrainingId) return;
-          updateTraining(selectedTrainingId, {
-            status: "PENDING_DPO_APPROVAL",
-          });
-          addAudit(
-            "Admin",
-            "Requested DPO approval",
-            selectedTraining()?.title || selectedTrainingId,
-          );
+          try {
+            await submitTraining(selectedTrainingId);
+            addAudit(
+              "Admin",
+              "Requested DPO approval",
+              selectedTraining()?.title || selectedTrainingId,
+            );
+            await refresh();
+          } catch (e) {
+            console.error(e);
+            alert(e?.message || "Failed to submit for approval");
+          }
         }}
       />
 
@@ -696,16 +837,57 @@ export default function TrainingAdmin() {
       <QuestionDrawer
         open={openQuestion}
         onClose={() => setOpenQuestion(false)}
-        onSave={(qItem) => {
-          setOpenQuestion(false);
-          setData((prev) => ({
-            ...prev,
-            questionBank: [
-              { ...qItem, id: `q-${Math.random().toString(16).slice(2)}` },
-              ...prev.questionBank,
-            ],
-          }));
-          addAudit("Admin", "Created question", qItem.text);
+        onSave={async (qItem) => {
+          const trainingId = selectedTrainingId || data.trainings[0]?.id;
+          if (!trainingId) {
+            alert("Create/select a training first.");
+            return;
+          }
+
+          try {
+            const payload = {
+              type: "MCQ",
+              prompt: qItem.text,
+              options: (qItem.options || []).map((text, idx) => ({
+                label: String.fromCharCode(65 + idx),
+                text,
+              })),
+              correctIndex: qItem.answerIndex,
+              points: 1,
+            };
+
+            await addTrainingQuestion(trainingId, payload);
+
+            // Reload training detail so quiz count updates
+            const fresh = await getTraining(trainingId);
+            const ui = trainingDbToUi(fresh);
+
+            setData((prev) => ({
+              ...prev,
+              trainings: prev.trainings.map((t) =>
+                t.id === trainingId ? ui : t,
+              ),
+              questionBank: (fresh.questions || []).map((q) => ({
+                id: q.id,
+                text: q.prompt,
+                difficulty: "EASY",
+                tags: [],
+                type: q.type,
+                options: (q.options || []).map((o) => o.text),
+                answerIndex: q.correctOptionId
+                  ? (q.options || []).findIndex(
+                      (o) => o.id === q.correctOptionId,
+                    )
+                  : 0,
+              })),
+            }));
+
+            addAudit("Admin", "Created question", qItem.text);
+            setOpenQuestion(false);
+          } catch (e) {
+            console.error(e);
+            alert(e?.message || "Failed to add question");
+          }
         }}
       />
 
@@ -713,24 +895,56 @@ export default function TrainingAdmin() {
       <AssignTrainingDrawer
         open={openAssign}
         training={selectedTraining()}
-        users={data.users}
+        users={data.users} // optional; can be []
         assignments={data.assignments}
         onClose={() => setOpenAssign(false)}
-        onAssign={(newAssignments, dueAt) => {
-          // enforce "Entire Organization"
-          setData((prev) => ({
-            ...prev,
-            assignments: newAssignments,
-            trainings: prev.trainings.map((t) =>
-              t.id === selectedTrainingId ? { ...t, dueAt } : t,
-            ),
-          }));
-          addAudit(
-            "Admin",
-            "Assigned training org-wide",
-            selectedTraining()?.title || selectedTrainingId,
-          );
-          setOpenAssign(false);
+        onAssign={async (_ignored, dueAtIso) => {
+          if (!selectedTrainingId) return;
+
+          try {
+            // 1) update dueAt on training
+            await updateTrainingApi(selectedTrainingId, { dueAt: dueAtIso });
+
+            // 2) assign all (backend enforces rules)
+            await assignTrainingAll(selectedTrainingId);
+
+            // 3) fetch updated assignments for this training
+            const res = await listTrainingAssignments(selectedTrainingId);
+            const items = (res.items || []).map((a) => ({
+              id: a.id,
+              trainingId: a.trainingId,
+              userId: a.userId,
+              status: a.status === "ASSIGNED" ? "NOT_STARTED" : a.status,
+              score: a.score,
+              completedAt: a.completedAt,
+              dueAt: a.dueAt,
+              user: a.user,
+            }));
+
+            setData((prev) => ({
+              ...prev,
+              assignments: [
+                ...prev.assignments.filter(
+                  (x) => x.trainingId !== selectedTrainingId,
+                ),
+                ...items,
+              ],
+              trainings: prev.trainings.map((t) =>
+                t.id === selectedTrainingId ? { ...t, dueAt: dueAtIso } : t,
+              ),
+            }));
+
+            addAudit(
+              "Admin",
+              "Assigned training org-wide",
+              selectedTraining()?.title || selectedTrainingId,
+            );
+            setOpenAssign(false);
+            await refresh();
+          } catch (e) {
+            console.error(e);
+            alert(e?.message || "Assign failed");
+          }
         }}
       />
 

@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   Clock,
   GraduationCap,
@@ -8,6 +9,22 @@ import {
 import { Card, SectionTitle } from "../ui/atoms";
 import { cn, clamp, pillTone, formatDate } from "../utils";
 
+function prettyStatus(s) {
+  return String(s || "")
+    .replaceAll("_", " ")
+    .trim();
+}
+
+function formatDateLong(d) {
+  if (!d) return "—";
+  const date = new Date(d);
+  if (Number.isNaN(date.getTime())) return "—";
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = date.toLocaleString("en-US", { month: "long" });
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
 export function TrainingsPanel({
   trainings,
   assignmentsByTraining,
@@ -15,6 +32,21 @@ export function TrainingsPanel({
   onOpenAssign,
   onDelete,
 }) {
+  // Pagination: minimum 10 visible
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const totalPages = Math.max(1, Math.ceil(trainings.length / pageSize));
+
+  const pageItems = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return trainings.slice(start, start + pageSize);
+  }, [trainings, page]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(1);
+  }, [page, totalPages]);
+
   return (
     <Card>
       <SectionTitle
@@ -28,23 +60,33 @@ export function TrainingsPanel({
         }
       />
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-slate-50">
-            <tr className="text-left text-xs font-bold text-slate-600">
-              <th className="px-5 py-3">Training</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Validity</th>
-              <th className="px-5 py-3">Due Date</th>
-              <th className="px-5 py-3">Assigned</th>
-              <th className="px-5 py-3">Completion</th>
-              <th className="px-5 py-3 text-right">Action</th>
+      <div className="max-w-full overflow-x-auto">
+        <table className="w-full table-fixed">
+          <colgroup>
+            <col className="w-[18%]" /> {/* Training */}
+            <col className="w-[8%]" /> {/* Status */}
+            <col className="w-[5%]" /> {/* Validity */}
+            <col className="w-[10%]" /> {/* Due Date */}
+            <col className="w-[5%]" /> {/* Assigned */}
+            <col className="w-[10%]" /> {/* Completion */}
+            <col className="w-[8%]" /> {/* Action */}
+          </colgroup>
+
+          <thead className="bg-slate-100">
+            <tr className="text-left text-sm font-bold text-indigo-600">
+              <th className="py-3 text-center">Training</th>
+              <th className="py-3 text-center">Status</th>
+              <th className="py-3 text-center">Validity</th>
+              <th className="py-3 text-center">Due Date</th>
+              <th className="py-3 text-center">Assigned</th>
+              <th className="py-3 text-center">Completion</th>
+              <th className="py-3 text-center">Action</th>
             </tr>
           </thead>
 
           <tbody>
-            {trainings.length ? (
-              trainings.map((t) => {
+            {pageItems.length ? (
+              pageItems.map((t, idx) => {
                 const as = assignmentsByTraining.get(t.id) || [];
                 const total = as.length || 0;
                 const completed = as.filter(
@@ -54,55 +96,65 @@ export function TrainingsPanel({
                   ? Math.round((completed / total) * 100)
                   : 0;
 
+                const zebra = idx % 2 === 0 ? "bg-white" : "bg-slate-50/80";
+
                 return (
                   <tr
                     key={t.id}
-                    className="border-t border-slate-100 hover:bg-slate-50/60"
+                    className={cn(
+                      "border-t border-slate-100 hover:bg-slate-100",
+                      zebra,
+                    )}
                   >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-50 ring-1 ring-indigo-100">
-                          <GraduationCap className="h-5 w-5 text-indigo-700" />
-                        </div>
-
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-bold text-slate-900">
+                    {/* TRAINING */}
+                    <td className="pl-3 py-4">
+                      <div className="flex items-start gap-1">
+                        <GraduationCap className="h-4 w-4 text-indigo-700" />
+                        <div>
+                          <div className="text-sm font-bold text-slate-900 whitespace-normal break-words leading-snug">
                             {t.title}
                           </div>
+
                           <div className="mt-0.5 text-xs font-semibold text-slate-500">
                             Created: {formatDate(t.createdAt)} • By:{" "}
-                            {t.createdBy}
+                            {t.createdBy || "—"}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
+                    {/* STATUS */}
+                    <td className="px-1 py-4 text-center">
                       <span
                         className={cn(
-                          "inline-flex rounded-full px-3 py-1 text-xs font-bold ring-1",
+                          "inline-flex max-w-full justify-center whitespace-normal break-words rounded-md px-1 py-1 text-xs font-semibold ring-1",
                           pillTone(t.status),
                         )}
+                        title={prettyStatus(t.status)}
                       >
-                        {t.status}
+                        {prettyStatus(t.status)}
                       </span>
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
-                      {t.validityDays} days
+                    {/* VALIDITY */}
+                    <td className="px-1 py-4 text-center text-sm font-semibold text-slate-800">
+                      {t.validityDays}d
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
-                      {formatDate(t.dueAt)}
+                    {/* DUE */}
+                    <td className="px-1 py-4 text-center text-sm font-semibold text-slate-800">
+                      {formatDateLong(t.dueAt)}
                     </td>
 
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
+                    {/* ASSIGNED */}
+                    <td className="px-1 py-4 text-center text-sm font-semibold text-slate-800">
                       {total ? `${total} users` : "Not assigned"}
                     </td>
 
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100">
+                    {/* COMPLETION */}
+                    <td className="px-2 py-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
                           <div
                             className="h-full rounded-full bg-indigo-600"
                             style={{ width: `${clamp(completion, 0, 100)}%` }}
@@ -114,11 +166,12 @@ export function TrainingsPanel({
                       </div>
                     </td>
 
-                    <td className="px-5 py-4 text-right">
+                    {/* ACTION */}
+                    <td className="px-2 py-4 text-right">
                       <div className="inline-flex flex-wrap justify-end gap-2">
                         <button
                           onClick={() => onOpenBuilder(t.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-1 text-sm font-semibold text-slate-800 hover:bg-slate-50"
                           type="button"
                         >
                           <Edit3 className="h-4 w-4" />
@@ -127,7 +180,7 @@ export function TrainingsPanel({
 
                         <button
                           onClick={() => onOpenAssign(t.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-2 py-1 text-sm font-semibold text-white hover:bg-indigo-700"
                           type="button"
                         >
                           Assign <ArrowUpRight className="h-4 w-4" />
@@ -135,7 +188,7 @@ export function TrainingsPanel({
 
                         <button
                           onClick={() => onDelete(t.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                          className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-2 py-1 text-sm font-semibold text-rose-700 hover:bg-rose-100"
                           type="button"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -148,7 +201,7 @@ export function TrainingsPanel({
               })
             ) : (
               <tr>
-                <td colSpan={7} className="px-5 py-10">
+                <td colSpan={7} className="px-1 py-10">
                   <div className="text-sm font-bold text-slate-900">
                     No trainings found
                   </div>
@@ -161,6 +214,43 @@ export function TrainingsPanel({
             )}
           </tbody>
         </table>
+
+        {/* Pagination bottom-right */}
+        <div className="flex items-center justify-end gap-3 px-5 py-4">
+          <div className="text-xs font-semibold text-slate-600">
+            Page {page} of {totalPages}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className={cn(
+                "rounded-xl border px-3 py-1.5 text-xs font-bold",
+                page === 1
+                  ? "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+              )}
+            >
+              Prev
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className={cn(
+                "rounded-xl border px-3 py-1.5 text-xs font-bold",
+                page === totalPages
+                  ? "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed"
+                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
+              )}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </Card>
   );
