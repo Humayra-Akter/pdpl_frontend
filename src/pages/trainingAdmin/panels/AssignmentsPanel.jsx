@@ -1,17 +1,10 @@
-// /components/TrainingAssignmentsPanel.jsx
 import { useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { Card, SectionTitle } from "../ui/atoms";
+import { cn, pillTone, formatDate } from "../utils";
+import { ASSIGNMENT_STATUS } from "../constants";
 
-export default function TrainingAssignmentsPanel({
-  ui,
-  lucide,
-  trainings,
-  users,
-  assignments,
-  assignmentStatusEnums,
-}) {
-  const { Card, SectionTitle, cn, pillTone, formatDate } = ui;
-  const { Search, X } = lucide;
-
+export function AssignmentsPanel({ trainings, users, assignments }) {
   const [trainingId, setTrainingId] = useState("ALL");
   const [status, setStatus] = useState("ALL");
   const [q, setQ] = useState("");
@@ -20,6 +13,7 @@ export default function TrainingAssignmentsPanel({
     let xs = assignments.map((a) => {
       const t = trainings.find((x) => x.id === a.trainingId);
       const u = users.find((x) => x.id === a.userId);
+
       return {
         ...a,
         trainingTitle: t?.title || a.trainingId,
@@ -32,10 +26,12 @@ export default function TrainingAssignmentsPanel({
     if (trainingId !== "ALL")
       xs = xs.filter((x) => x.trainingId === trainingId);
     if (status !== "ALL") xs = xs.filter((x) => x.status === status);
-    if (q.trim())
+
+    if (q.trim()) {
       xs = xs.filter((x) =>
         x.userName.toLowerCase().includes(q.trim().toLowerCase()),
       );
+    }
 
     return xs;
   }, [assignments, trainings, users, trainingId, status, q]);
@@ -46,7 +42,8 @@ export default function TrainingAssignmentsPanel({
         title="Assignments"
         subtitle="Track completion records and quiz results (audit evidence)"
       />
-      <div className="p-5 space-y-4">
+
+      <div className="space-y-4 p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="relative w-full md:max-w-lg">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -87,7 +84,7 @@ export default function TrainingAssignmentsPanel({
               className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Status</option>
-              {assignmentStatusEnums.map((s) => (
+              {ASSIGNMENT_STATUS.map((s) => (
                 <option key={s} value={s}>
                   {s.replaceAll("_", " ")}
                 </option>
@@ -110,6 +107,7 @@ export default function TrainingAssignmentsPanel({
                   <th className="px-5 py-3">Completed</th>
                 </tr>
               </thead>
+
               <tbody>
                 {rows.length ? (
                   rows.map((r) => (
@@ -120,12 +118,15 @@ export default function TrainingAssignmentsPanel({
                       <td className="px-5 py-4 text-sm font-bold text-slate-900">
                         {r.userName}
                       </td>
+
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
                         {r.trainingTitle}
                       </td>
+
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
                         {r.dept}
                       </td>
+
                       <td className="px-5 py-4">
                         <span
                           className={cn(
@@ -136,12 +137,15 @@ export default function TrainingAssignmentsPanel({
                           {r.status.replaceAll("_", " ")}
                         </span>
                       </td>
+
                       <td className="px-5 py-4 text-sm font-bold text-slate-900">
                         {r.score ?? "—"}
                       </td>
+
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
                         {formatDate(r.dueAt)}
                       </td>
+
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
                         {formatDate(r.completedAt)}
                       </td>

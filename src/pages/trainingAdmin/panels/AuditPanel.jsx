@@ -1,13 +1,13 @@
-// /components/TrainingAuditPanel.jsx
-export default function TrainingAuditPanel({ ui, audit }) {
-  const { Card, SectionTitle } = ui;
+import { Card, SectionTitle } from "../ui/atoms";
 
+export function AuditPanel({ audit }) {
   return (
     <Card>
       <SectionTitle
         title="Audit Trail"
         subtitle="Who created, who assigned, completions, quiz results, notifications"
       />
+
       <div className="p-5">
         <div className="overflow-hidden rounded-3xl border border-slate-200">
           <table className="w-full">
@@ -19,6 +19,7 @@ export default function TrainingAuditPanel({ ui, audit }) {
                 <th className="px-5 py-3">Meta</th>
               </tr>
             </thead>
+
             <tbody>
               {audit.length ? (
                 audit.map((l) => (

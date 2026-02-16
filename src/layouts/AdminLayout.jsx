@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import {
   LayoutDashboard,
@@ -9,62 +10,60 @@ import {
   BookOpen,
   GraduationCap,
   LogOut,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Breadcrumbs from "./Breadcrumbs";
 
-// function Item({ to, icon: Icon, label }) {
-//   return (
-//     <NavLink
-//       to={to}
-//       end
-//       className={({ isActive }) =>
-//         [
-//           "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium",
-//           "transition-all duration-200",
-//           isActive
-//             ? "bg-blue-50 text-blue-800 ring-1 ring-blue-100"
-//             : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
-//         ].join(" ")
-//       }
-//     >
-//       {/* left active indicator */}
-//       <span
-//         className={[
-//           "absolute left-1 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full",
-//           "transition-all duration-200",
-//           "bg-blue-600",
-//           "opacity-0 group-[.active]:opacity-100",
-//         ].join(" ")}
-//       />
-//       <Icon className="h-4 w-4 opacity-80 group-hover:opacity-100" />
-//       <span>{label}</span>
-//     </NavLink>
-//   );
-// }
-function Item({ to, icon: Icon, label, exact = false }) {
+import logo from "../assets/logo.png";
+function SidebarItem({
+  to,
+  icon: Icon,
+  label,
+  collapsed,
+  exact = false,
+  matchPrefix = false,
+  pathname,
+}) {
+  const isActive = exact
+    ? pathname === to
+    : matchPrefix
+      ? pathname === to || pathname.startsWith(to + "/")
+      : pathname.startsWith(to);
+
   return (
     <NavLink
       to={to}
       end={exact}
-      className={({ isActive }) =>
+      title={collapsed ? label : undefined}
+      className={() =>
         [
-          "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium",
+          "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold",
           "transition-all duration-200",
+          collapsed ? "justify-center" : "",
           isActive
-            ? "bg-blue-50 text-blue-800 ring-1 ring-blue-100"
+            ? "bg-blue-50 text-blue-900 ring-1 ring-blue-100"
             : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
         ].join(" ")
       }
     >
+      {/* left active indicator */}
       <span
         className={[
           "absolute left-1 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full",
-          "transition-all duration-200 bg-blue-600",
-          "opacity-0 group-[.active]:opacity-100",
+          "transition-all duration-200",
+          isActive ? "bg-blue-600 opacity-100" : "bg-blue-600 opacity-0",
         ].join(" ")}
       />
-      <Icon className="h-4 w-4 opacity-80 group-hover:opacity-100" />
-      <span>{label}</span>
+
+      <Icon
+        className={[
+          "h-5 w-5",
+          isActive ? "opacity-100" : "opacity-80 group-hover:opacity-100",
+        ].join(" ")}
+      />
+
+      {!collapsed ? <span className="truncate">{label}</span> : null}
     </NavLink>
   );
 }
@@ -78,96 +77,238 @@ export default function AdminLayout() {
     : pathname.startsWith("/admin/gap")
       ? "PDPL Gap Assessment"
       : pathname.startsWith("/admin/ropa")
-        ? "ropa"
-        : "Compliance Dashboard";
+        ? "RoPA"
+        : pathname.startsWith("/admin/incidents")
+          ? "Incident & Breach Management"
+          : pathname.startsWith("/admin/training")
+            ? "Training"
+            : pathname.startsWith("/admin/users")
+              ? "User Management"
+              : pathname.startsWith("/admin/vendor")
+                ? "Policies & Procedures"
+                : "Compliance Dashboard";
+
+  // Sidebar collapsed state (persisted)
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("pdpl.sidebarCollapsed");
+    if (saved === "1") setCollapsed(true);
+    if (saved === "0") setCollapsed(false);
+  }, []);
+
+  function toggleSidebar() {
+    setCollapsed((v) => {
+      const next = !v;
+      localStorage.setItem("pdpl.sidebarCollapsed", next ? "1" : "0");
+      return next;
+    });
+  }
+
+  // widths
+  const sidebarW = collapsed ? "w-20" : "w-72";
+  const mainPad = collapsed ? "lg:pl-20" : "lg:pl-72";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="flex min-h-screen">
-        {/* Sidebar (fixed left on large screens) */}
+        {/* Sidebar */}
         <aside className="hidden lg:block">
-          <div className="fixed left-0 top-0 shadow-xl h-screen w-72 border-r border-slate-200 bg-white">
-            {/* Brand area */}
-            <div className="border-b border-slate-200 p-5">
-              <div className="text-xs text-slate-500">PDPL Secure Portal</div>
-              <div
-                className="mt-1 text-base font-semibold"
-                style={{ color: "var(--pdpl-primary)" }}
-              >
-                Admin / DPO
+          <div
+            className={[
+              "fixed left-0 top-0 h-screen border-r border-slate-200 bg-white shadow-xl",
+              sidebarW,
+              "transition-all duration-200",
+            ].join(" ")}
+          >
+            {/* Brand / top */}
+            {/* Brand / top */}
+            <div className="border-b border-slate-200 p-4">
+              <div className="flex items-start justify-between gap-3">
+                {/* Left: Brand */}
+                {!collapsed ? (
+                  <div className="min-w-0">
+                    <div className="text-xs text-slate-500">
+                      PDPL Secure Portal
+                    </div>
+
+                    {/* Logo + Admin/DPO aligned */}
+                    <div className="mt-2 flex items-center gap-3">
+                      <img
+                        src={logo}
+                        className="h-9 w-9 rounded-xl object-contain"
+                        alt="PDPL Logo"
+                      />
+                      <div className="min-w-0">
+                        <div
+                          className="text-base font-semibold leading-tight"
+                          style={{ color: "var(--pdpl-primary)" }}
+                        >
+                          Admin / DPO
+                        </div>
+                        <div className="text-xs font-semibold text-slate-500 leading-tight">
+                          Compliance Console
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100"
+                    style={{ color: "var(--pdpl-primary)" }}
+                    title="PDPL Secure Portal"
+                  >
+                    <span className="text-sm font-bold">PD</span>
+                  </div>
+                )}
+
+                {/* Right: Toggle button (moved to top-right) */}
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className={[
+                    "shrink-0 inline-flex items-center justify-center rounded-xl",
+                    "border border-slate-200 bg-white",
+                    "h-10 w-10",
+                    "text-slate-700 hover:bg-slate-50",
+                    "transition-all duration-200",
+                  ].join(" ")}
+                  title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {collapsed ? (
+                    <ChevronRight className="h-5 w-5" />
+                  ) : (
+                    <ChevronLeft className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* Scrollable menu */}
-            <div className="h-[calc(100vh-76px)] overflow-y-auto p-3">
+            {/* Menu */}
+            <div className="h-[calc(100vh-96px)] overflow-y-auto p-3">
               <nav className="space-y-2">
-                <div className="px-2 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  Overview
-                </div>
-                <Item to="/admin" icon={LayoutDashboard} label="Dashboard" />
+                {!collapsed ? (
+                  <div className="px-2 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    Overview
+                  </div>
+                ) : (
+                  <div className="h-2" />
+                )}
+                <SidebarItem
+                  to="/admin"
+                  icon={LayoutDashboard}
+                  label="Dashboard"
+                  collapsed={collapsed}
+                  exact
+                  pathname={pathname}
+                />
 
-                <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  Assessments
-                </div>
-                <Item
+                {!collapsed ? (
+                  <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    Assessments
+                  </div>
+                ) : (
+                  <div className="h-2" />
+                )}
+                <SidebarItem
                   to="/admin/gap"
                   icon={ClipboardCheck}
                   label="PDPL Gap Assessment"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
                 />
-                <Item
+                <SidebarItem
                   to="/admin/dpia"
                   icon={FileText}
                   label="Data Privacy Impact Assessment"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
                 />
-                <Item
+                <SidebarItem
                   to="/admin/ropa"
                   icon={FileText}
                   label="Record of Processing Activities"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
                 />
 
-                <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  Operations
-                </div>
-                <Item
+                {!collapsed ? (
+                  <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    Operations
+                  </div>
+                ) : (
+                  <div className="h-2" />
+                )}
+                <SidebarItem
                   to="/admin/incidents"
                   icon={ShieldAlert}
                   label="Incidents & Breach"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
                 />
-                <Item
+                <SidebarItem
                   to="/admin/vendor"
                   icon={BookOpen}
                   label="Policies & Procedures"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
                 />
-                <Item
+                <SidebarItem
                   to="/admin/training"
                   icon={GraduationCap}
                   label="Training"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
                 />
 
-                <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                  Admin
+                {!collapsed ? (
+                  <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                    Admin
+                  </div>
+                ) : (
+                  <div className="h-2" />
+                )}
+                <SidebarItem
+                  to="/admin/users"
+                  icon={Users}
+                  label="User Management"
+                  collapsed={collapsed}
+                  pathname={pathname}
+                  matchPrefix
+                />
+
+                {/* Logout */}
+                <div className="pt-2">
+                  <button
+                    onClick={logout}
+                    className={[
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-2",
+                      "text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50",
+                      collapsed ? "justify-center" : "",
+                    ].join(" ")}
+                    title={collapsed ? "Logout" : undefined}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    {!collapsed ? <span>Logout</span> : null}
+                  </button>
                 </div>
-                <Item to="/admin/users" icon={Users} label="User Management" />
 
-                <button
-                  onClick={logout}
-                  className="mt-3 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </button>
-
-                {/* spacer */}
                 <div className="h-4" />
               </nav>
             </div>
           </div>
         </aside>
 
-        {/* Main content (push right so it doesn't go under fixed sidebar) */}
-        <main className="flex-1 lg:pl-72">
+        {/* Main */}
+        <main className={["flex-1", mainPad].join(" ")}>
           <div className="px-6 py-6">
-            {/* Top bar (sticky inside main) */}
+            {/* Top bar */}
             <header className="sticky top-0 z-10 mb-6 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div>

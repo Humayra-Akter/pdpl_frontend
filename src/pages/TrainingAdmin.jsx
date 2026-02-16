@@ -1,468 +1,99 @@
 import { useEffect, useMemo, useState } from "react";
+
 import {
   Plus,
-  Search,
-  X,
   RefreshCw,
   ShieldCheck,
   ShieldAlert,
   Activity,
   ClipboardList,
   GraduationCap,
-  FileText,
-  Link as LinkIcon,
-  Video,
-  CheckCircle2,
-  Clock,
-  Calendar,
   Users,
   Send,
   Settings,
   FileUp,
   PenTool,
   BadgeCheck,
-  ChevronRight,
+  ArrowUpRight,
   Trash2,
   Edit3,
-  ArrowUpRight,
+  Clock,
+  Calendar,
 } from "lucide-react";
 
-import TrainingHeader from "../components/TrainingHeader";
-import TrainingKpis from "../components/TrainingKpis";
-import TrainingGraphs from "../components/TrainingGraphs";
-import TrainingModulesPanel from "../components/TrainingModulesPanel";
-import TrainingQuizBuilder from "../components/TrainingQuizBuilder";
-import TrainingAssignmentsPanel from "../components/TrainingAssignmentsPanel";
-import TrainingAuditPanel from "../components/TrainingAuditPanel";
+import { cn, formatDate, existsIn } from "./trainingAdmin/utils";
+
+import {
+  listTrainings,
+  createTraining,
+  getTraining,
+  updateTraining as updateTrainingApi,
+  submitTraining,
+  approveTraining,
+  publishTraining,
+  archiveTraining,
+  addTrainingModule,
+  updateTrainingModule,
+  deleteTrainingModule,
+  addTrainingQuestion,
+  assignTrainingAll,
+  listTrainingAssignments,
+} from "../lib/admin";
+
+import { Card, SectionTitle } from "./trainingAdmin/ui/atoms";
+import { Tabs } from "./trainingAdmin/ui/atoms";
+import { KpiCard } from "./trainingAdmin/ui/atoms";
+import { ConfirmModal } from "./trainingAdmin/ui/atoms";
+import { ActionButton } from "./trainingAdmin/ui/atoms";
+import { RuleRow } from "./trainingAdmin/ui/atoms";
+
+import { DashboardPanel } from "./trainingAdmin/panels/DashboardPanel";
+import { TrainingsPanel } from "./trainingAdmin/panels/TrainingsPanel";
+import { QuestionBankPanel } from "./trainingAdmin/panels/QuestionBankPanel";
+import { AssignmentsPanel } from "./trainingAdmin/panels/AssignmentsPanel";
+import { ApprovalsPanel } from "./trainingAdmin/panels/ApprovalsPanel";
+import { AuditPanel } from "./trainingAdmin/panels/AuditPanel";
+
+import { CreateTrainingDrawer } from "./trainingAdmin/drawers/CreateTrainingDrawer";
+import { TrainingBuilderDrawer } from "./trainingAdmin/drawers/TrainingBuilderDrawer";
+import { QuestionDrawer } from "./trainingAdmin/drawers/QuestionDrawer";
+import { AssignTrainingDrawer } from "./trainingAdmin/drawers/AssignTrainingDrawer";
+import { ReminderSettingsDrawer } from "./trainingAdmin/drawers/ReminderSettingsDrawer";
 
 /**
- * Privacy Training Admin (refactor)
+ * Privacy Training Admin
  * - Tailwind only
  * - No root css
- * - Backend hooks are TODO
+ * - UI is deep/controlled, backend hooks are TODO
  */
 
-export const CONTENT_TYPES = [
-  { key: "DOC", label: "Document (PDF)", icon: FileText },
-  { key: "LINK", label: "External Link", icon: LinkIcon },
-  { key: "VIDEO", label: "Video (future)", icon: Video },
-  { key: "ASSESSMENT", label: "Assessment (Quiz)", icon: ClipboardList },
-];
-
-export const DIFFICULTY = ["EASY", "MEDIUM", "HARD"];
-export const STATUS = [
-  "DRAFT",
-  "PENDING_DPO_APPROVAL",
-  "PUBLISHED",
-  "ARCHIVED",
-];
-export const ASSIGNMENT_STATUS = [
-  "NOT_STARTED",
-  "IN_PROGRESS",
-  "COMPLETED",
-  "OVERDUE",
-];
-
-/* ------------------ shared helpers (used by components) ------------------ */
-export function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
-
-export function formatDate(d) {
-  if (!d) return "—";
-  const dt = new Date(d);
-  if (Number.isNaN(dt.getTime())) return "—";
-  return dt.toLocaleDateString();
-}
-
-export function clamp(n, a, b) {
-  const x = Number(n);
-  if (Number.isNaN(x)) return a;
-  return Math.max(a, Math.min(b, x));
-}
-
-export function pillTone(key) {
-  const s = String(key || "").toUpperCase();
-  const map = {
-    DRAFT: "bg-slate-100 text-slate-800 ring-slate-200",
-    PENDING_DPO_APPROVAL: "bg-amber-100 text-amber-900 ring-amber-200",
-    PUBLISHED: "bg-emerald-100 text-emerald-900 ring-emerald-200",
-    ARCHIVED: "bg-slate-100 text-slate-600 ring-slate-200",
-
-    NOT_STARTED: "bg-slate-100 text-slate-800 ring-slate-200",
-    IN_PROGRESS: "bg-indigo-100 text-indigo-900 ring-indigo-200",
-    COMPLETED: "bg-emerald-100 text-emerald-900 ring-emerald-200",
-    OVERDUE: "bg-rose-100 text-rose-900 ring-rose-200",
-
-    HIGH: "bg-rose-100 text-rose-900 ring-rose-200",
-    MEDIUM: "bg-amber-100 text-amber-900 ring-amber-200",
-    LOW: "bg-slate-100 text-slate-800 ring-slate-200",
-  };
-  return map[s] || map.DRAFT;
-}
-
-/* ------------------ shared UI primitives (kept here; passed down) ------------------ */
-export function Card({ children, className }) {
-  return (
-    <div
-      className={cn(
-        "rounded-3xl border border-slate-200 bg-white shadow-sm",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function SectionTitle({ title, subtitle, right }) {
-  return (
-    <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
-      <div>
-        <div className="text-sm font-semibold text-slate-900">{title}</div>
-        {subtitle ? (
-          <div className="mt-0.5 text-xs font-semibold text-slate-500">
-            {subtitle}
-          </div>
-        ) : null}
-      </div>
-      {right ? <div className="flex items-center gap-2">{right}</div> : null}
-    </div>
-  );
-}
-
-export function KpiCard({ title, value, hint, tone, icon: Icon }) {
-  const tones = {
-    indigo: {
-      wrap: "bg-indigo-50 ring-indigo-200 shadow-md hover:shadow-lg",
-      title: "text-indigo-900",
-      hint: "text-indigo-900/70",
-      value: "text-indigo-950",
-      iconWrap: "bg-indigo-100 text-indigo-700 ring-indigo-200",
-    },
-    amber: {
-      wrap: "bg-amber-50 ring-amber-200 shadow-md hover:shadow-lg",
-      title: "text-amber-900",
-      hint: "text-amber-900/70",
-      value: "text-amber-950",
-      iconWrap: "bg-amber-100 text-amber-700 ring-amber-200",
-    },
-    emerald: {
-      wrap: "bg-emerald-50 ring-emerald-200 shadow-md hover:shadow-lg",
-      title: "text-emerald-900",
-      hint: "text-emerald-900/70",
-      value: "text-emerald-950",
-      iconWrap: "bg-emerald-100 text-emerald-700 ring-emerald-200",
-    },
-    rose: {
-      wrap: "bg-rose-50 ring-rose-200 shadow-md hover:shadow-lg",
-      title: "text-rose-900",
-      hint: "text-rose-900/70",
-      value: "text-rose-950",
-      iconWrap: "bg-rose-100 text-rose-700 ring-rose-200",
-    },
-    slate: {
-      wrap: "bg-slate-50 ring-slate-200 shadow-md hover:shadow-lg",
-      title: "text-slate-900",
-      hint: "text-slate-600",
-      value: "text-slate-950",
-      iconWrap: "bg-white text-slate-700 ring-slate-200",
-    },
-  };
-  const t = tones[tone] || tones.indigo;
-
-  return (
-    <div className={cn("rounded-3xl ring-1 p-4", t.wrap)}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className={cn("text-xs font-bold", t.title)}>{title}</div>
-          <div className={cn("mt-1 text-3xl font-bold", t.value)}>{value}</div>
-          <div className={cn("mt-1 text-xs font-semibold", t.hint)}>{hint}</div>
-        </div>
-        <div
-          className={cn(
-            "h-11 w-11 rounded-2xl grid place-items-center ring-1",
-            t.iconWrap,
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function Drawer({ open, title, subtitle, onClose, children, footer }) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-slate-900/40" onClick={onClose} />
-      <div className="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-xl">
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
-          <div>
-            <div className="text-lg font-bold text-slate-900">{title}</div>
-            {subtitle ? (
-              <div className="mt-1 text-sm font-semibold text-slate-500">
-                {subtitle}
-              </div>
-            ) : null}
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50"
-            type="button"
-            title="Close"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="h-[calc(100%-140px)] overflow-auto p-5">{children}</div>
-        <div className="border-t border-slate-200 px-5 py-4">{footer}</div>
-      </div>
-    </div>
-  );
-}
-
-export function ConfirmModal({
-  open,
-  title,
-  body,
-  onCancel,
-  onConfirm,
-  confirmText = "Confirm",
-}) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
-        <div className="text-lg font-bold text-slate-900">{title}</div>
-        <div className="mt-2 text-sm font-semibold text-slate-600">{body}</div>
-        <div className="mt-5 flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-            type="button"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700"
-            type="button"
-          >
-            {confirmText}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- mock data (replace with API) ---------------- */
-function makeMock() {
-  const trainings = [
-    {
-      id: "t-001",
-      title: "PDPL Fundamentals 2025",
-      status: "PUBLISHED",
-      validityDays: 365,
-      dueAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-      createdBy: "Admin",
-      approvedBy: "DPO",
-      modules: [
-        {
-          id: "m1",
-          title: "Intro to PDPL",
-          contentType: "DOC",
-          required: true,
-        },
-        {
-          id: "m2",
-          title: "Lawful Processing",
-          contentType: "LINK",
-          required: true,
-        },
-        {
-          id: "m3",
-          title: "Assessment Quiz",
-          contentType: "ASSESSMENT",
-          required: true,
-        },
-      ],
-      quiz: { questionCount: 10, passScore: 70, attemptsAllowed: 3 },
-      reminder: {
-        enabled: true,
-        everyDays: 3,
-        beforeDueDays: 7,
-        overdueEveryDays: 2,
-        ccDpoOnOverdue: true,
-      },
-    },
-    {
-      id: "t-002",
-      title: "Annual Refresher (Draft)",
-      status: "DRAFT",
-      validityDays: 365,
-      dueAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-      createdBy: "Admin",
-      approvedBy: null,
-      modules: [
-        {
-          id: "m1",
-          title: "Refresher Deck",
-          contentType: "DOC",
-          required: true,
-        },
-      ],
-      quiz: { questionCount: 5, passScore: 70, attemptsAllowed: 2 },
-      reminder: {
-        enabled: true,
-        everyDays: 7,
-        beforeDueDays: 7,
-        overdueEveryDays: 2,
-        ccDpoOnOverdue: true,
-      },
-    },
-    {
-      id: "t-003",
-      title: "Vendor Handling & Incident Escalation",
-      status: "PENDING_DPO_APPROVAL",
-      validityDays: 180,
-      dueAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10).toISOString(),
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-      createdBy: "DPO",
-      approvedBy: null,
-      modules: [
-        {
-          id: "m1",
-          title: "Incident basics",
-          contentType: "DOC",
-          required: true,
-        },
-        { id: "m2", title: "Quiz", contentType: "ASSESSMENT", required: true },
-      ],
-      quiz: { questionCount: 8, passScore: 70, attemptsAllowed: 3 },
-      reminder: {
-        enabled: true,
-        everyDays: 2,
-        beforeDueDays: 5,
-        overdueEveryDays: 1,
-        ccDpoOnOverdue: true,
-      },
-    },
-  ];
-
-  const users = [
-    { id: "u1", name: "Arafat", dept: "IT", role: "USER" },
-    { id: "u2", name: "Sadia", dept: "Business", role: "USER" },
-    { id: "u3", name: "Nabil", dept: "Service", role: "USER" },
-    { id: "u4", name: "DPO", dept: "Compliance", role: "DPO" },
-  ];
-
-  const assignments = [
-    {
-      id: "a1",
-      trainingId: "t-001",
-      userId: "u1",
-      status: "COMPLETED",
-      score: 86,
-      completedAt: new Date(Date.now() - 86400000 * 4).toISOString(),
-    },
-    {
-      id: "a2",
-      trainingId: "t-001",
-      userId: "u2",
-      status: "IN_PROGRESS",
-      score: null,
-      completedAt: null,
-    },
-    {
-      id: "a3",
-      trainingId: "t-001",
-      userId: "u3",
-      status: "OVERDUE",
-      score: null,
-      completedAt: null,
-    },
-  ];
-
-  const questionBank = [
-    {
-      id: "q1",
-      text: "What is personal data under PDPL?",
-      difficulty: "EASY",
-      tags: ["fundamentals"],
-      options: [
-        "Any data related to an identified/identifiable person",
-        "Only financial data",
-        "Only health data",
-        "Only email addresses",
-      ],
-      answerIndex: 0,
-    },
-    {
-      id: "q2",
-      text: "When should a breach be escalated to the DPO?",
-      difficulty: "MEDIUM",
-      tags: ["incident", "breach"],
-      options: [
-        "Only after 30 days",
-        "Immediately when identified/confirmed",
-        "Only if media reports it",
-        "Only if customer complains",
-      ],
-      answerIndex: 1,
-    },
-  ];
-
-  const audit = [
-    {
-      id: "l1",
-      ts: new Date(Date.now() - 3600_000 * 7).toISOString(),
-      actor: "Admin",
-      action: "Created training",
-      meta: "Annual Refresher (Draft)",
-    },
-    {
-      id: "l2",
-      ts: new Date(Date.now() - 3600_000 * 4).toISOString(),
-      actor: "DPO",
-      action: "Requested changes",
-      meta: "Vendor Handling & Incident Escalation",
-    },
-    {
-      id: "l3",
-      ts: new Date(Date.now() - 3600_000 * 2).toISOString(),
-      actor: "System",
-      action: "Overdue reminder sent",
-      meta: "PDPL Fundamentals 2025 → Nabil",
-    },
-  ];
-
-  return { trainings, users, assignments, questionBank, audit };
-}
+/* ---------------- main page ---------------- */
 
 export default function TrainingAdmin() {
   const [tab, setTab] = useState("DASH");
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(() => makeMock());
+  const [data, setData] = useState(() => ({
+    trainings: [],
+    users: [], // optional: add users endpoint later
+    assignments: [],
+    questionBank: [],
+    audit: [], // still local for now unless you add audit endpoint
+  }));
 
-  // filters
+  // top filters
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("ALL");
 
-  // modals/drawers (kept here; you can split further later)
-  const [confirmDelete, setConfirmDelete] = useState(null);
-
-  // selection
-  const [selectedTrainingId, setSelectedTrainingId] = useState(null);
+  // drawers/modals
   const [openCreate, setOpenCreate] = useState(false);
   const [openBuilder, setOpenBuilder] = useState(false);
+  const [openQuestion, setOpenQuestion] = useState(false);
   const [openAssign, setOpenAssign] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  // selected training in builder/assign
+  const [selectedTrainingId, setSelectedTrainingId] = useState(null);
 
   const trainingsFiltered = useMemo(() => {
     let xs = [...data.trainings];
@@ -472,25 +103,30 @@ export default function TrainingAdmin() {
         (t) => String(t.status).toUpperCase() === String(status).toUpperCase(),
       );
     }
+
     if (q.trim()) {
       xs = xs.filter((t) =>
         String(t.title).toLowerCase().includes(q.trim().toLowerCase()),
       );
     }
 
+    // newest first
     xs.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
+
     return xs;
   }, [data.trainings, q, status]);
 
   const assignmentsByTraining = useMemo(() => {
     const map = new Map();
+
     for (const a of data.assignments) {
       if (!map.has(a.trainingId)) map.set(a.trainingId, []);
       map.get(a.trainingId).push(a);
     }
+
     return map;
   }, [data.assignments]);
 
@@ -498,10 +134,12 @@ export default function TrainingAdmin() {
     const published = data.trainings.filter(
       (t) => t.status === "PUBLISHED",
     ).length;
+
     const pending = data.trainings.filter(
       (t) => t.status === "PENDING_DPO_APPROVAL",
     ).length;
 
+    // organization-wide compliance based on active published training(s)
     const totalAssigned = data.assignments.length;
     const completed = data.assignments.filter(
       (a) => a.status === "COMPLETED",
@@ -516,12 +154,15 @@ export default function TrainingAdmin() {
     const completionRate = totalAssigned
       ? Math.round((completed / totalAssigned) * 100)
       : 0;
+
     const auditReady =
       overdue === 0 && totalAssigned > 0 && completed === totalAssigned;
 
+    // next expiry = earliest due date among published trainings
     const publishedTrainings = data.trainings.filter(
       (t) => t.status === "PUBLISHED",
     );
+
     const nextDueAt = publishedTrainings
       .map((t) => t.dueAt)
       .filter(Boolean)
@@ -542,17 +183,30 @@ export default function TrainingAdmin() {
   async function refresh() {
     setLoading(true);
     try {
-      // TODO: API
+      // TODO: API fetch:
+      // const res = await getTrainingDashboard();
+      // setData(res);
       await new Promise((r) => setTimeout(r, 350));
-      setData((d) => ({ ...d }));
+      setData((d) => ({ ...d })); // keep same mock, just to show loading
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    // TODO: initial API
+    // initial load
+    // TODO: API
   }, []);
+
+  function openTrainingBuilder(trainingId) {
+    setSelectedTrainingId(trainingId);
+    setOpenBuilder(true);
+  }
+
+  function openAssignment(trainingId) {
+    setSelectedTrainingId(trainingId);
+    setOpenAssign(true);
+  }
 
   function selectedTraining() {
     return data.trainings.find((t) => t.id === selectedTrainingId) || null;
@@ -565,6 +219,10 @@ export default function TrainingAdmin() {
         t.id === id ? { ...t, ...patch } : t,
       ),
     }));
+  }
+
+  function addTraining(newT) {
+    setData((prev) => ({ ...prev, trainings: [newT, ...prev.trainings] }));
   }
 
   function addAudit(actor, action, meta) {
@@ -591,99 +249,263 @@ export default function TrainingAdmin() {
     }));
   }
 
-  // UI pack passed to components
-  const ui = useMemo(
-    () => ({
-      cn,
-      formatDate,
-      clamp,
-      pillTone,
-      Card,
-      SectionTitle,
-      KpiCard,
-      Drawer,
-      ConfirmModal,
-    }),
-    [],
-  );
+  function uiStatusToDb(status) {
+    if (status === "PENDING_DPO_APPROVAL") return "PENDING_APPROVAL";
+    return status;
+  }
+  function dbStatusToUi(status) {
+    if (status === "PENDING_APPROVAL") return "PENDING_DPO_APPROVAL";
+    return status;
+  }
+
+  function uiModuleTypeToDb(contentType) {
+    if (contentType === "DOC") return "DOCUMENT";
+    return contentType; // LINK, VIDEO, ASSESSMENT
+  }
+  function dbModuleTypeToUi(type) {
+    if (type === "DOCUMENT") return "DOC";
+    return type;
+  }
+
+  function trainingDbToUi(t) {
+    return {
+      id: t.id,
+      title: t.title,
+      description: t.description || "",
+      status: dbStatusToUi(t.status),
+      startAt: t.startAt,
+      dueAt: t.dueAt,
+      validityDays: t.validityDays ?? 365,
+
+      // UI expects reminder object (your DB has reminderEveryDays)
+      reminder: {
+        enabled: true,
+        everyDays: t.reminderEveryDays ?? 7,
+        beforeDueDays: 7,
+        overdueEveryDays: 2,
+        ccDpoOnOverdue: true,
+      },
+
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+      approvedAt: t.approvedAt || null,
+      approvedBy: t.approvedBy?.fullName || null,
+      createdBy: t.createdBy?.fullName || "—",
+
+      totalUsersAssigned: t.totalUsersAssigned ?? 0,
+      totalCompleted: t.totalCompleted ?? 0,
+
+      modules: Array.isArray(t.modules)
+        ? t.modules.map((m) => ({
+            id: m.id,
+            title: m.title,
+            contentType: dbModuleTypeToUi(m.type),
+            required: true, // DB doesn't store this
+            description: m.description || "",
+            externalUrl: m.externalUrl || "",
+            fileAssetId: m.fileAssetId || null,
+            sortOrder: m.sortOrder ?? 0,
+          }))
+        : [],
+
+      // Keep raw questions so we can show counts / build question bank later
+      questions: Array.isArray(t.questions) ? t.questions : [],
+
+      // Your UI expects a quiz object; backend actually uses questions list
+      quiz: {
+        questionCount: Array.isArray(t.questions) ? t.questions.length : 0,
+        passScore: 70,
+        attemptsAllowed: 3,
+      },
+    };
+  }
+
+  function trainingUiToDbPatch(ui) {
+    return {
+      title: ui.title,
+      description: ui.description || null,
+      startAt: ui.startAt || null,
+      dueAt: ui.dueAt || null,
+      validityDays: ui.validityDays ?? 365,
+      reminderEveryDays: ui?.reminder?.everyDays ?? 7,
+      // status updates via workflow endpoints, not via PUT (we keep clean)
+    };
+  }
+
+  /* ------------------ UI ------------------ */
 
   return (
     <div className="space-y-6">
-      <TrainingHeader
-        ui={ui}
-        lucide={{
-          RefreshCw,
-          Plus,
-          Settings,
-          Search,
-          X,
-          Activity,
-          GraduationCap,
-          PenTool,
-          Users,
-          BadgeCheck,
-          FileUp,
-        }}
-        loading={loading}
-        onRefresh={refresh}
-        onNewTraining={() => setOpenCreate(true)}
-        onOpenSettings={() => setOpenSettings(true)}
-        tab={tab}
-        onTabChange={setTab}
-        q={q}
-        onQChange={setQ}
-        status={status}
-        onStatusChange={setStatus}
-      />
+      {/* Top hero */}
+      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+        <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-emerald-50">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-slate-500">
+                Training
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                Privacy Training Admin
+              </div>
+              <div className="mt-1 text-sm font-semibold text-slate-600 max-w-3xl">
+                Build privacy training modules, assign to the entire
+                organization, enforce deadlines, run mandatory quizzes, and keep
+                audit-ready evidence.
+              </div>
+            </div>
 
-      <TrainingKpis
-        ui={ui}
-        lucide={{
-          GraduationCap,
-          Activity,
-          ShieldAlert,
-          ShieldCheck,
-          ClipboardList,
-        }}
-        kpis={kpis}
-        totalAssigned={data.assignments.length}
-      />
+            <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={refresh}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                  type="button"
+                >
+                  <RefreshCw
+                    className={cn("h-4 w-4", loading ? "animate-spin" : "")}
+                  />
+                  Refresh
+                </button>
 
+                <button
+                  onClick={() => setOpenCreate(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+                  type="button"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Training
+                </button>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setOpenSettings(true)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                  type="button"
+                >
+                  <Settings className="h-4 w-4" />
+                  Rules &amp; Reminders
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-1 w-full bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-600" />
+      </div>
+
+      {/* KPIs */}
+      <div className="grid gap-3 md:grid-cols-4">
+        <KpiCard
+          title="COMPLETION RATE"
+          value={`${kpis.completionRate}%`}
+          hint={`${kpis.completed} completed • ${data.assignments.length} assigned`}
+          tone="indigo"
+          icon={GraduationCap}
+        />
+        <KpiCard
+          title="IN PROGRESS"
+          value={kpis.inProgress}
+          hint="Users currently taking training"
+          tone="amber"
+          icon={Activity}
+        />
+        <KpiCard
+          title="OVERDUE"
+          value={kpis.overdue}
+          hint="Overdue alerts sent to DPO"
+          tone="rose"
+          icon={ShieldAlert}
+        />
+        <KpiCard
+          title="AUDIT READY"
+          value={kpis.auditReady ? "YES" : "NO"}
+          hint={
+            kpis.nextDueAt
+              ? `Next due: ${formatDate(kpis.nextDueAt)}`
+              : "No published training yet"
+          }
+          tone={kpis.auditReady ? "emerald" : "slate"}
+          icon={kpis.auditReady ? ShieldCheck : ClipboardList}
+        />
+      </div>
+
+      {/* Tabs + search */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <Tabs
+            value={tab}
+            onChange={setTab}
+            tabs={[
+              { key: "DASH", label: "Dashboard", icon: Activity },
+              { key: "TRAININGS", label: "Trainings", icon: GraduationCap },
+              { key: "QUESTIONS", label: "Question Bank", icon: PenTool },
+              { key: "ASSIGNMENTS", label: "Assignments", icon: Users },
+              { key: "APPROVALS", label: "DPO Approvals", icon: BadgeCheck },
+              { key: "AUDIT", label: "Audit Trail", icon: FileUp },
+            ]}
+          />
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <div className="relative w-full sm:w-[420px]">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search trainings by title..."
+                className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              />
+              {q ? (
+                <button
+                  onClick={() => setQ("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-1 text-slate-500 hover:bg-slate-100"
+                  type="button"
+                >
+                  ✕
+                </button>
+              ) : null}
+            </div>
+
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+            >
+              <option value="ALL">All Status</option>
+              <option value="DRAFT">Draft</option>
+              <option value="PENDING_DPO_APPROVAL">Pending DPO</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Main grid (left content + right actions) */}
       <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+        {/* Left content */}
         <div className="space-y-6">
           {tab === "DASH" ? (
-            <TrainingGraphs
-              ui={ui}
-              lucide={{ Users, Calendar, Clock, CheckCircle2 }}
+            <DashboardPanel
               trainings={data.trainings}
               assignments={data.assignments}
+              users={data.users}
             />
           ) : null}
 
           {tab === "TRAININGS" ? (
-            <TrainingModulesPanel
-              ui={ui}
-              lucide={{ GraduationCap, Clock, Edit3, ArrowUpRight, Trash2 }}
+            <TrainingsPanel
               trainings={trainingsFiltered}
               assignmentsByTraining={assignmentsByTraining}
-              onOpenBuilder={(id) => {
-                setSelectedTrainingId(id);
-                setOpenBuilder(true);
-              }}
-              onOpenAssign={(id) => {
-                setSelectedTrainingId(id);
-                setOpenAssign(true);
-              }}
+              onOpenBuilder={(id) => openTrainingBuilder(id)}
+              onOpenAssign={(id) => openAssignment(id)}
               onDelete={(id) => setConfirmDelete({ id })}
             />
           ) : null}
 
           {tab === "QUESTIONS" ? (
-            <TrainingQuizBuilder
-              ui={ui}
-              lucide={{ Plus, Search, X, PenTool }}
-              difficultyEnums={DIFFICULTY}
+            <QuestionBankPanel
               questionBank={data.questionBank}
+              onCreate={() => setOpenQuestion(true)}
               onUpsert={(qItem) => {
                 setData((prev) => {
                   const exists = prev.questionBank.find(
@@ -698,48 +520,28 @@ export default function TrainingAdmin() {
                       : [qItem, ...prev.questionBank],
                   };
                 });
-                addAudit("Admin", "Upsert question", qItem.text);
-              }}
-              onCreateNew={(qItem) => {
-                setData((prev) => ({
-                  ...prev,
-                  questionBank: [
-                    {
-                      ...qItem,
-                      id: `q-${Math.random().toString(16).slice(2)}`,
-                    },
-                    ...prev.questionBank,
-                  ],
-                }));
-                addAudit("Admin", "Created question", qItem.text);
+
+                addAudit(
+                  "Admin",
+                  existsIn(data.questionBank, qItem.id)
+                    ? "Updated question"
+                    : "Created question",
+                  qItem.text,
+                );
               }}
             />
           ) : null}
 
           {tab === "ASSIGNMENTS" ? (
-            <TrainingAssignmentsPanel
-              ui={ui}
-              lucide={{ Search, X }}
+            <AssignmentsPanel
               trainings={data.trainings}
               users={data.users}
               assignments={data.assignments}
-              assignmentStatusEnums={ASSIGNMENT_STATUS}
             />
-          ) : null}
-
-          {tab === "AUDIT" ? (
-            <TrainingAuditPanel ui={ui} audit={data.audit} />
           ) : null}
 
           {tab === "APPROVALS" ? (
             <ApprovalsPanel
-              ui={ui}
-              lucide={{
-                ClipboardList,
-                ShieldCheck,
-                ArrowUpRight,
-                CheckCircle2,
-              }}
               trainings={data.trainings}
               onApprove={(id) => {
                 updateTraining(id, { status: "PUBLISHED", approvedBy: "DPO" });
@@ -757,39 +559,192 @@ export default function TrainingAdmin() {
                   data.trainings.find((t) => t.id === id)?.title || id,
                 );
               }}
-              onOpenBuilder={(id) => {
-                setSelectedTrainingId(id);
-                setOpenBuilder(true);
-              }}
+              onOpenBuilder={(id) => openTrainingBuilder(id)}
             />
           ) : null}
+
+          {tab === "AUDIT" ? <AuditPanel audit={data.audit} /> : null}
         </div>
 
-        <RightRail
-          ui={ui}
-          lucide={{
-            ChevronRight,
-            Plus,
-            Send,
-            BadgeCheck,
-            FileUp,
-            Users,
-            Clock,
-            Calendar,
-            ShieldAlert,
-            Settings,
-          }}
-          onNewTraining={() => setOpenCreate(true)}
-          onJumpApprovals={() => setTab("APPROVALS")}
-          onOpenSettings={() => setOpenSettings(true)}
-          addAudit={addAudit}
-        />
+        {/* Right actions */}
+        <div className="space-y-6">
+          <Card>
+            <SectionTitle
+              title="Quick Actions"
+              subtitle="Most common admin controls"
+              right={
+                <span className="text-xs font-semibold text-slate-500">
+                  Admin/DPO
+                </span>
+              }
+            />
+            <div className="p-5 space-y-3">
+              <ActionButton
+                icon={Plus}
+                title="Create Training"
+                desc="Build a new training, modules & mandatory quiz"
+                tone="indigo"
+                onClick={() => setOpenCreate(true)}
+              />
+              <ActionButton
+                icon={Send}
+                title="Send Reminder Now"
+                desc="Trigger reminder notifications to assignees + DPO"
+                tone="amber"
+                onClick={() => {
+                  addAudit(
+                    "Admin",
+                    "Manual reminder triggered",
+                    "All assignments",
+                  );
+                  alert("Hook this to your notification system (email).");
+                }}
+              />
+              <ActionButton
+                icon={BadgeCheck}
+                title="Review DPO Approvals"
+                desc="Publish requires DPO approval"
+                tone="emerald"
+                onClick={() => setTab("APPROVALS")}
+              />
+              <ActionButton
+                icon={FileUp}
+                title="Export Evidence"
+                desc="Completion + quiz results + audit logs"
+                tone="slate"
+                onClick={() => alert("TODO: export to CSV/PDF")}
+              />
+            </div>
+          </Card>
+
+          <Card>
+            <SectionTitle
+              title="Compliance Rules"
+              subtitle="Based on your SG answers"
+            />
+            <div className="p-5 space-y-3">
+              <RuleRow
+                icon={Users}
+                title="Assignment scope"
+                value="Entire Organization (mandatory)"
+              />
+              <RuleRow
+                icon={Clock}
+                title="Multiple trainings"
+                value="Not allowed concurrently (enforced)"
+              />
+              <RuleRow
+                icon={BadgeCheck}
+                title="Approval required"
+                value="DPO must approve before publish"
+              />
+              <RuleRow
+                icon={ShieldAlert}
+                title="Overdue escalation"
+                value="Notify DPO + configurable cadence"
+              />
+              <RuleRow
+                icon={Calendar}
+                title="Validity/expiry"
+                value="Configurable per training"
+              />
+            </div>
+          </Card>
+        </div>
       </div>
 
-      {/* --- Keep your existing drawers here. You can move them later if you want. --- */}
-      {/* For brevity: I’m not duplicating all drawers again in this refactor snippet. */}
-      {/* Drop in your CreateTrainingDrawer, TrainingBuilderDrawer, AssignTrainingDrawer, ReminderSettingsDrawer from your current file unchanged. */}
+      {/* Create Training Drawer */}
+      <CreateTrainingDrawer
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreate={(t) => {
+          addTraining(t);
+          addAudit("Admin", "Created training", t.title);
+          setOpenCreate(false);
+          setTab("TRAININGS");
+        }}
+      />
 
+      {/* Builder Drawer */}
+      <TrainingBuilderDrawer
+        open={openBuilder}
+        training={selectedTraining()}
+        onClose={() => setOpenBuilder(false)}
+        onSave={(patch) => {
+          if (!selectedTrainingId) return;
+          updateTraining(selectedTrainingId, patch);
+          addAudit(
+            "Admin",
+            "Updated training",
+            selectedTraining()?.title || selectedTrainingId,
+          );
+        }}
+        onRequestApproval={() => {
+          if (!selectedTrainingId) return;
+          updateTraining(selectedTrainingId, {
+            status: "PENDING_DPO_APPROVAL",
+          });
+          addAudit(
+            "Admin",
+            "Requested DPO approval",
+            selectedTraining()?.title || selectedTrainingId,
+          );
+        }}
+      />
+
+      {/* Question Drawer */}
+      <QuestionDrawer
+        open={openQuestion}
+        onClose={() => setOpenQuestion(false)}
+        onSave={(qItem) => {
+          setOpenQuestion(false);
+          setData((prev) => ({
+            ...prev,
+            questionBank: [
+              { ...qItem, id: `q-${Math.random().toString(16).slice(2)}` },
+              ...prev.questionBank,
+            ],
+          }));
+          addAudit("Admin", "Created question", qItem.text);
+        }}
+      />
+
+      {/* Assignment Drawer */}
+      <AssignTrainingDrawer
+        open={openAssign}
+        training={selectedTraining()}
+        users={data.users}
+        assignments={data.assignments}
+        onClose={() => setOpenAssign(false)}
+        onAssign={(newAssignments, dueAt) => {
+          // enforce "Entire Organization"
+          setData((prev) => ({
+            ...prev,
+            assignments: newAssignments,
+            trainings: prev.trainings.map((t) =>
+              t.id === selectedTrainingId ? { ...t, dueAt } : t,
+            ),
+          }));
+          addAudit(
+            "Admin",
+            "Assigned training org-wide",
+            selectedTraining()?.title || selectedTrainingId,
+          );
+          setOpenAssign(false);
+        }}
+      />
+
+      {/* Settings Drawer */}
+      <ReminderSettingsDrawer
+        open={openSettings}
+        onClose={() => setOpenSettings(false)}
+        onSave={() => {
+          addAudit("Admin", "Updated reminder rules", "Global rules (future)");
+          setOpenSettings(false);
+        }}
+      />
+
+      {/* Delete confirm */}
       <ConfirmModal
         open={Boolean(confirmDelete?.id)}
         title="Delete training?"
@@ -807,282 +762,5 @@ export default function TrainingAdmin() {
         confirmText="Delete"
       />
     </div>
-  );
-}
-
-/* ---------------- RIGHT RAIL (kept in page; optional to split later) ---------------- */
-
-function ActionButton({ ui, icon: Icon, title, desc, tone, onClick }) {
-  const { cn } = ui;
-  const tones = {
-    indigo: "bg-indigo-600 hover:bg-indigo-700",
-    amber: "bg-amber-600 hover:bg-amber-700",
-    emerald: "bg-emerald-600 hover:bg-emerald-700",
-    slate: "bg-slate-800 hover:bg-slate-900",
-  };
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "w-full rounded-2xl px-4 py-3 text-left text-white shadow-sm transition",
-        tones[tone] || tones.indigo,
-      )}
-      type="button"
-    >
-      <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-white/15 grid place-items-center ring-1 ring-white/25">
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-bold">{title}</div>
-          <div className="mt-1 text-xs font-semibold text-white/85">{desc}</div>
-        </div>
-        <ChevronRight className="h-5 w-5 opacity-80" />
-      </div>
-    </button>
-  );
-}
-
-function RuleRow({ title, value, icon: Icon }) {
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-      <div className="flex items-start gap-3">
-        <div className="h-9 w-9 rounded-2xl bg-white grid place-items-center ring-1 ring-slate-200">
-          <Icon className="h-4 w-4 text-slate-700" />
-        </div>
-        <div>
-          <div className="text-xs font-bold text-slate-900">{title}</div>
-          <div className="mt-0.5 text-xs font-semibold text-slate-600">
-            {value}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function RightRail({
-  ui,
-  lucide,
-  onNewTraining,
-  onJumpApprovals,
-  onOpenSettings,
-  addAudit,
-}) {
-  const { Card, SectionTitle } = ui;
-  const {
-    Plus,
-    Send,
-    BadgeCheck,
-    FileUp,
-    Users,
-    Clock,
-    Calendar,
-    ShieldAlert,
-    Settings,
-  } = lucide;
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <SectionTitle
-          title="Quick Actions"
-          subtitle="Most common admin controls"
-          right={
-            <span className="text-xs font-semibold text-slate-500">
-              Admin/DPO
-            </span>
-          }
-        />
-        <div className="p-5 space-y-3">
-          <ActionButton
-            ui={ui}
-            icon={Plus}
-            title="Create Training"
-            desc="Build a new training, modules & mandatory quiz"
-            tone="indigo"
-            onClick={onNewTraining}
-          />
-          <ActionButton
-            ui={ui}
-            icon={Send}
-            title="Send Reminder Now"
-            desc="Trigger reminder notifications to assignees + DPO"
-            tone="amber"
-            onClick={() => {
-              addAudit("Admin", "Manual reminder triggered", "All assignments");
-              alert("Hook this to your notification system (email).");
-            }}
-          />
-          <ActionButton
-            ui={ui}
-            icon={BadgeCheck}
-            title="Review DPO Approvals"
-            desc="Publish requires DPO approval"
-            tone="emerald"
-            onClick={onJumpApprovals}
-          />
-          <ActionButton
-            ui={ui}
-            icon={FileUp}
-            title="Export Evidence"
-            desc="Completion + quiz results + audit logs"
-            tone="slate"
-            onClick={() => alert("TODO: export to CSV/PDF")}
-          />
-        </div>
-      </Card>
-
-      <Card>
-        <SectionTitle
-          title="Compliance Rules"
-          subtitle="Based on your SG answers"
-          right={
-            <button
-              onClick={onOpenSettings}
-              className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-              type="button"
-            >
-              <Settings className="h-4 w-4" />
-              Rules
-            </button>
-          }
-        />
-        <div className="p-5 space-y-3">
-          <RuleRow
-            icon={Users}
-            title="Assignment scope"
-            value="Entire Organization (mandatory)"
-          />
-          <RuleRow
-            icon={Clock}
-            title="Multiple trainings"
-            value="Not allowed concurrently (enforced)"
-          />
-          <RuleRow
-            icon={BadgeCheck}
-            title="Approval required"
-            value="DPO must approve before publish"
-          />
-          <RuleRow
-            icon={ShieldAlert}
-            title="Overdue escalation"
-            value="Notify DPO + configurable cadence"
-          />
-          <RuleRow
-            icon={Calendar}
-            title="Validity/expiry"
-            value="Configurable per training"
-          />
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-/* ---------------- Approvals panel kept here (optional split later) ---------------- */
-
-function ApprovalsPanel({
-  ui,
-  lucide,
-  trainings,
-  onApprove,
-  onReject,
-  onOpenBuilder,
-}) {
-  const { Card, SectionTitle, cn, pillTone, formatDate } = ui;
-  const { ClipboardList, ShieldCheck, ArrowUpRight, CheckCircle2 } = lucide;
-
-  const pending = trainings.filter((t) => t.status === "PENDING_DPO_APPROVAL");
-
-  return (
-    <Card>
-      <SectionTitle
-        title="DPO Approval Queue"
-        subtitle="Trainings must be approved by DPO before publishing"
-      />
-      <div className="p-5 space-y-4">
-        {pending.length ? (
-          pending.map((t) => (
-            <div
-              key={t.id}
-              className="rounded-3xl border border-slate-200 bg-white p-4"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-bold text-slate-900">
-                    {t.title}
-                  </div>
-                  <div className="mt-1 text-sm font-semibold text-slate-600">
-                    Created by: {t.createdBy} • Due: {formatDate(t.dueAt)} •
-                    Validity: {t.validityDays} days
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-full px-3 py-1 text-xs font-bold ring-1",
-                        pillTone(t.status),
-                      )}
-                    >
-                      {t.status}
-                    </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                      <ClipboardList className="h-4 w-4" />
-                      Modules: {t.modules?.length || 0}
-                    </span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
-                      <ShieldCheck className="h-4 w-4" />
-                      Quiz: {t.quiz?.questionCount || 0} Qs • Pass{" "}
-                      {t.quiz?.passScore || 0}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => onOpenBuilder(t.id)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-                    type="button"
-                  >
-                    Review <ArrowUpRight className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => onReject(t.id)}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
-                    type="button"
-                  >
-                    Reject
-                  </button>
-                  <button
-                    onClick={() => onApprove(t.id)}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-                    type="button"
-                  >
-                    Approve & Publish <CheckCircle2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8">
-            <div className="text-sm font-bold text-slate-900">
-              No items pending approval
-            </div>
-            <div className="mt-1 text-sm font-semibold text-slate-600">
-              Draft trainings can be submitted for approval by Admin/DPO.
-            </div>
-          </div>
-        )}
-
-        <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-amber-50 via-white to-indigo-50 p-4">
-          <div className="text-sm font-bold text-slate-900">Policy note</div>
-          <div className="mt-1 text-sm font-semibold text-slate-600">
-            Employees can start immediately after assignment (SG). Approval
-            controls publishing only — not assignment scheduling.
-          </div>
-        </div>
-      </div>
-    </Card>
   );
 }

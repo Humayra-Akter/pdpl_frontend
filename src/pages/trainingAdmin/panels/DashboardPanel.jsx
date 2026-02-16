@@ -1,10 +1,9 @@
-// /components/TrainingGraphs.jsx
 import { useMemo } from "react";
+import { Users, Calendar, Clock } from "lucide-react";
+import { Card, SectionTitle, MiniStat, ProofItem } from "../ui/atoms";
+import { cn, formatDate, clamp, pillTone } from "../utils";
 
-export default function TrainingGraphs({ ui, lucide, trainings, assignments }) {
-  const { Card, SectionTitle, cn, pillTone, clamp, formatDate } = ui;
-  const { Users, Calendar, Clock, CheckCircle2 } = lucide;
-
+export function DashboardPanel({ trainings, assignments, users }) {
   const published = trainings.filter((t) => t.status === "PUBLISHED");
 
   const perTraining = useMemo(() => {
@@ -15,6 +14,7 @@ export default function TrainingGraphs({ ui, lucide, trainings, assignments }) {
       const overdue = xs.filter((a) => a.status === "OVERDUE").length;
       const inProgress = xs.filter((a) => a.status === "IN_PROGRESS").length;
       const completion = total ? Math.round((completed / total) * 100) : 0;
+
       return { t, total, completed, overdue, inProgress, completion };
     });
   }, [published, assignments]);
@@ -25,6 +25,7 @@ export default function TrainingGraphs({ ui, lucide, trainings, assignments }) {
         title="Training Status Distribution"
         subtitle="At-a-glance: published trainings and their completion progress"
       />
+
       <div className="p-5 space-y-4">
         {perTraining.length ? (
           perTraining.map((row) => (
@@ -37,6 +38,7 @@ export default function TrainingGraphs({ ui, lucide, trainings, assignments }) {
                   <div className="text-sm font-bold text-slate-900">
                     {row.t.title}
                   </div>
+
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
@@ -46,14 +48,17 @@ export default function TrainingGraphs({ ui, lucide, trainings, assignments }) {
                     >
                       {row.t.status}
                     </span>
+
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                       <Users className="h-4 w-4" />
                       Assigned: {row.total || 0}
                     </span>
+
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                       <Calendar className="h-4 w-4" />
                       Due: {formatDate(row.t.dueAt)}
                     </span>
+
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-slate-200">
                       <Clock className="h-4 w-4" />
                       Valid: {row.t.validityDays} days
@@ -118,35 +123,12 @@ export default function TrainingGraphs({ ui, lucide, trainings, assignments }) {
             created, who assigned, completion records, and quiz results.
           </div>
           <div className="mt-3 grid gap-2 md:grid-cols-3">
-            <ProofItem icon={CheckCircle2} label="Creator & Approver" />
-            <ProofItem icon={CheckCircle2} label="Assignment records" />
-            <ProofItem icon={CheckCircle2} label="Quiz scores & attempts" />
+            <ProofItem label="Creator & Approver" />
+            <ProofItem label="Assignment records" />
+            <ProofItem label="Quiz scores & attempts" />
           </div>
         </div>
       </div>
     </Card>
-  );
-}
-
-function MiniStat({ label, value, tone }) {
-  const map = {
-    emerald: "bg-emerald-50 ring-emerald-200 text-emerald-900",
-    indigo: "bg-indigo-50 ring-indigo-200 text-indigo-900",
-    rose: "bg-rose-50 ring-rose-200 text-rose-900",
-  };
-  return (
-    <div className={`rounded-3xl p-3 ring-1 ${map[tone] || map.indigo}`}>
-      <div className="text-xs font-bold">{label}</div>
-      <div className="mt-1 text-2xl font-bold">{value}</div>
-    </div>
-  );
-}
-
-function ProofItem({ icon: Icon, label }) {
-  return (
-    <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
-      <Icon className="h-4 w-4 text-emerald-600" />
-      <div className="text-xs font-bold text-slate-800">{label}</div>
-    </div>
   );
 }
