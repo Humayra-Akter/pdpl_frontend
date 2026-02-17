@@ -16,7 +16,7 @@ import {
   listGapAssessments,
   createGapAssessment,
   updateGapAssessment,
-} from "../lib/gap";
+} from "../lib/admin";
 
 /** --- UI helpers --- */
 function cn(...xs) {

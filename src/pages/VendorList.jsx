@@ -169,7 +169,6 @@ function KpiCard({
   progress = 0,
   progressLabel,
   deltaLabel = "vs prev",
- 
 }) {
   const tones = {
     indigo: {
@@ -211,7 +210,7 @@ function KpiCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1",
+        "relative overflow-hidden rounded-xl bg-white p-4 shadow-sm ring-1",
         t.ring,
       )}
     >
@@ -256,13 +255,12 @@ function KpiCard({
         <div className="flex flex-col items-end gap-2">
           <div
             className={cn(
-              "grid h-11 w-11 place-items-center rounded-2xl shadow-sm ring-1 ring-white/50",
+              "grid h-11 w-11 place-items-center rounded-xl shadow-sm ring-1 ring-white/50",
               t.icon,
             )}
           >
             <Icon className="h-5 w-5" />
           </div>
-
         </div>
       </div>
 
@@ -422,7 +420,6 @@ export default function VendorList() {
       highRisk: highRiskCount(cur) - highRiskCount(prev),
     };
   }, [raw]);
-
 
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
   const pageSafe = clamp(page, 1, totalPages);
