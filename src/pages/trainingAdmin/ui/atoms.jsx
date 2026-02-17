@@ -7,7 +7,7 @@ function Card({ children, className }) {
   return (
     <div
       className={cn(
-        "rounded-3xl border border-slate-200 bg-white shadow-sm",
+        "rounded-xl border border-slate-200 bg-white shadow-sm",
         className,
       )}
     >
@@ -74,7 +74,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon }) {
   const t = tones[tone] || tones.indigo;
 
   return (
-    <div className={cn("rounded-3xl ring-1 p-4", t.wrap)}>
+    <div className={cn("rounded-xl ring-1 p-4", t.wrap)}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className={cn("text-xs font-bold", t.title)}>{title}</div>
@@ -83,7 +83,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon }) {
         </div>
         <div
           className={cn(
-            "h-11 w-11 rounded-2xl grid place-items-center ring-1",
+            "h-11 w-11 rounded-xl grid place-items-center ring-1",
             t.iconWrap,
           )}
         >
@@ -122,7 +122,7 @@ function Tabs({ value, onChange, tabs }) {
             key={t.key}
             onClick={() => onChange(t.key)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-semibold transition",
+              "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition",
               active
                 ? "border-indigo-200 bg-indigo-50 text-indigo-900"
                 : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
@@ -157,7 +157,7 @@ function Drawer({ open, title, subtitle, onClose, children, footer }) {
 
           <button
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50"
             type="button"
             title="Close"
           >
@@ -184,14 +184,14 @@ function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-xl">
         <div className="text-lg font-bold text-slate-900">{title}</div>
         <div className="mt-2 text-sm font-semibold text-slate-600">{body}</div>
 
         <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={onCancel}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
             Cancel
@@ -199,7 +199,7 @@ function ConfirmModal({
 
           <button
             onClick={onConfirm}
-            className="rounded-2xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700"
+            className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700"
             type="button"
           >
             {confirmText}
@@ -224,13 +224,13 @@ function ActionButton({ icon: Icon, title, desc, tone, onClick }) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full rounded-2xl px-4 py-3 text-left text-white shadow-sm transition",
+        "w-full rounded-xl px-4 py-3 text-left text-white shadow-sm transition",
         tones[tone] || tones.indigo,
       )}
       type="button"
     >
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-2xl bg-white/15 grid place-items-center ring-1 ring-white/25">
+        <div className="h-10 w-10 rounded-xl bg-white/15 grid place-items-center ring-1 ring-white/25">
           <Icon className="h-5 w-5" />
         </div>
 
@@ -247,9 +247,9 @@ function ActionButton({ icon: Icon, title, desc, tone, onClick }) {
 
 function RuleRow({ icon: Icon, title, value }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+    <div className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
       <div className="flex items-start gap-3">
-        <div className="h-9 w-9 rounded-2xl bg-white grid place-items-center ring-1 ring-slate-200">
+        <div className="h-9 w-9 rounded-xl bg-white grid place-items-center ring-1 ring-slate-200">
           <Icon className="h-4 w-4 text-slate-700" />
         </div>
 
@@ -272,7 +272,7 @@ function MiniStat({ label, value, tone }) {
   };
 
   return (
-    <div className={cn("rounded-3xl p-3 ring-1", map[tone] || map.indigo)}>
+    <div className={cn("rounded-xl p-3 ring-1", map[tone] || map.indigo)}>
       <div className="text-xs font-bold">{label}</div>
       <div className="mt-1 text-2xl font-bold">{value}</div>
     </div>
@@ -281,7 +281,7 @@ function MiniStat({ label, value, tone }) {
 
 function ProofItem({ label }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2">
+    <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
       <CheckCircle2 className="h-4 w-4 text-emerald-600" />
       <div className="text-xs font-bold text-slate-800">{label}</div>
     </div>

@@ -144,7 +144,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={reset}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
             Reset
@@ -153,7 +153,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
           <div className="flex items-center gap-2">
             <button
               onClick={handleClose}
-              className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
               type="button"
             >
               Cancel
@@ -163,7 +163,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
               onClick={handleCreate}
               disabled={!canSubmit}
               className={cn(
-                "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
+                "rounded-xl px-4 py-2 text-sm font-semibold text-white",
                 canSubmit
                   ? "bg-indigo-600 hover:bg-indigo-700"
                   : "bg-slate-300 cursor-not-allowed",
@@ -181,7 +181,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             placeholder="e.g., PDPL Fundamentals 2025"
           />
         </Field>
@@ -192,7 +192,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
               value={validityDays}
               onChange={(e) => setValidityDays(e.target.value)}
               type="number"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             />
           </Field>
 
@@ -201,12 +201,12 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
               value={dueAt}
               onChange={(e) => setDueAt(e.target.value)}
               type="date"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             />
           </Field>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between gap-2">
             <div>
               <div className="text-sm font-bold text-slate-900">
@@ -234,7 +234,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
                   value={questionCount}
                   onChange={(e) => setQuestionCount(e.target.value)}
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -243,7 +243,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
                   value={passScore}
                   onChange={(e) => setPassScore(e.target.value)}
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -252,14 +252,14 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
                   value={attemptsAllowed}
                   onChange={(e) => setAttemptsAllowed(e.target.value)}
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
             </div>
           ) : null}
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between gap-2">
             <div>
               <div className="text-sm font-bold text-slate-900">Reminders</div>
@@ -285,7 +285,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
                   value={everyDays}
                   onChange={(e) => setEveryDays(e.target.value)}
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -297,7 +297,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
                   value={beforeDueDays}
                   onChange={(e) => setBeforeDueDays(e.target.value)}
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -309,7 +309,7 @@ export function CreateTrainingDrawer({ open, onClose, onCreate }) {
                   value={overdueEveryDays}
                   onChange={(e) => setOverdueEveryDays(e.target.value)}
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 

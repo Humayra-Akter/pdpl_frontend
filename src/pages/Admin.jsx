@@ -81,7 +81,7 @@ function Card({ children, className = "" }) {
   return (
     <div
       className={[
-        "rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200",
+        "rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200",
         "transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
         className,
       ].join(" ")}
@@ -141,7 +141,7 @@ export default function Admin() {
 
   if (err) {
     return (
-      <div className="rounded-2xl bg-white p-5 ring-1 ring-red-200">
+      <div className="rounded-xl bg-white p-5 ring-1 ring-red-200">
         <div className="font-semibold text-red-700">Dashboard failed</div>
         <div className="mt-1 text-sm text-slate-600">{err}</div>
       </div>
@@ -285,7 +285,7 @@ export default function Admin() {
                 </div>
 
                 <div
-                  className="rounded-2xl p-3 ring-1"
+                  className="rounded-xl p-3 ring-1"
                   style={{
                     background: t.bg,
                     color: t.fg,

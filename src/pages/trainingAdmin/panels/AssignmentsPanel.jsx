@@ -51,7 +51,7 @@ export function AssignmentsPanel({ trainings, users, assignments }) {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search by user name..."
-              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             />
             {q ? (
               <button
@@ -68,7 +68,7 @@ export function AssignmentsPanel({ trainings, users, assignments }) {
             <select
               value={trainingId}
               onChange={(e) => setTrainingId(e.target.value)}
-              className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Trainings</option>
               {trainings.map((t) => (
@@ -81,7 +81,7 @@ export function AssignmentsPanel({ trainings, users, assignments }) {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Status</option>
               {ASSIGNMENT_STATUS.map((s) => (
@@ -93,7 +93,7 @@ export function AssignmentsPanel({ trainings, users, assignments }) {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-200">
+        <div className="overflow-hidden rounded-xl border border-slate-200">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
@@ -168,7 +168,7 @@ export function AssignmentsPanel({ trainings, users, assignments }) {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-sm font-bold text-slate-900">Audit evidence</div>
           <div className="mt-1 text-sm font-semibold text-slate-600">
             This table supports audit trail requirements: completion records +

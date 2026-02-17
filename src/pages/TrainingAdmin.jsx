@@ -176,7 +176,6 @@ export default function TrainingAdmin() {
     })();
   }, [tab, data.trainings]);
 
-
   const kpis = useMemo(() => {
     const published = data.trainings.filter(
       (t) => t.status === "PUBLISHED",
@@ -466,17 +465,15 @@ export default function TrainingAdmin() {
   return (
     <div className="space-y-6">
       {/* Top hero */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-emerald-50">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-slate-500">
-                Training
-              </div>
-              <div className="mt-1 text-2xl font-bold text-slate-900">
+              <div className="text-sm text-slate-500">Training</div>
+              <div className="mt-1 text-2xl font-semibold text-slate-900">
                 Privacy Training Admin
               </div>
-              <div className="mt-1 text-sm font-semibold text-slate-600 max-w-3xl">
+              <div className="mt-1 text-sm font-medium text-slate-600 max-w-3xl">
                 Build privacy training modules, assign to the entire
                 organization, enforce deadlines, run mandatory quizzes, and keep
                 audit-ready evidence.
@@ -487,7 +484,7 @@ export default function TrainingAdmin() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={refresh}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
                   type="button"
                 >
                   <RefreshCw
@@ -498,7 +495,7 @@ export default function TrainingAdmin() {
 
                 <button
                   onClick={() => setOpenCreate(true)}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700"
                   type="button"
                 >
                   <Plus className="h-4 w-4" />
@@ -509,7 +506,7 @@ export default function TrainingAdmin() {
               <div className="flex justify-end">
                 <button
                   onClick={() => setOpenSettings(true)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
                   type="button"
                 >
                   <Settings className="h-4 w-4" />
@@ -560,7 +557,7 @@ export default function TrainingAdmin() {
       </div>
 
       {/* Tabs + search */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Tabs
             value={tab}
@@ -581,7 +578,7 @@ export default function TrainingAdmin() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search trainings by title..."
-                className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
               {q ? (
                 <button
@@ -597,7 +594,7 @@ export default function TrainingAdmin() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Status</option>
               <option value="DRAFT">Draft</option>

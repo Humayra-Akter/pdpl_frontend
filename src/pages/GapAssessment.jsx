@@ -21,7 +21,7 @@ function Card({ children, className = "" }) {
   return (
     <div
       className={[
-        "rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm",
+        "rounded-xl bg-white ring-1 ring-slate-200 shadow-sm",
         className,
       ].join(" ")}
     >
@@ -176,7 +176,7 @@ function FancyKpiTile({
   rightLines,
 }) {
   return (
-    <div className={["rounded-2xl border px-5 py-2 shadow-sm", bg].join(" ")}>
+    <div className={["rounded-xl border px-5 py-2 shadow-sm", bg].join(" ")}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="text-xl mt-1 font-semibold text-slate-900">
@@ -230,7 +230,7 @@ function CreateModal({ open, onClose, onCreate }) {
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/35 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-xl font-extrabold text-slate-900">
@@ -437,7 +437,7 @@ export default function GapAssessment() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="text-sm text-slate-500">GAP Assessments</div>
-          <div className="text-2xl font-semibold text-slate-900">
+          <div className="mt-1 text-2xl font-semibold text-slate-900">
             PDPL Gap Assessment
           </div>
           <div className="mt-1 text-sm text-slate-600">
@@ -458,7 +458,7 @@ export default function GapAssessment() {
 
       {/* Error */}
       {err ? (
-        <div className="rounded-2xl bg-white p-5 ring-1 ring-red-200">
+        <div className="rounded-xl bg-white p-5 ring-1 ring-red-200">
           <div className="font-semibold text-red-700">Page failed</div>
           <div className="mt-1 text-sm text-slate-600">{err}</div>
           <IndigoButton className="mt-3" onClick={loadAll}>

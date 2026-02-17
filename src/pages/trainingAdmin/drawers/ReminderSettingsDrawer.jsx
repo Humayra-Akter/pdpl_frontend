@@ -33,7 +33,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
             Cancel
@@ -42,7 +42,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
           <button
             onClick={handleSave}
             className={cn(
-              "rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700",
+              "rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700",
             )}
             type="button"
           >
@@ -52,7 +52,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
       }
     >
       <div className="space-y-5">
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-sm font-bold text-slate-900">Policy rules</div>
           <div className="mt-1 text-sm font-semibold text-slate-600">
             These reflect your SG answers (org-wide mandatory, avoid multiple
@@ -60,7 +60,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
           </div>
 
           <div className="mt-4 space-y-3">
-            <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-3">
+            <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
               <input
                 type="checkbox"
                 checked={singleActiveTraining}
@@ -76,7 +76,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
               </div>
             </label>
 
-            <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-3">
+            <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3">
               <input
                 type="checkbox"
                 checked={escalateOverdueToDpo}
@@ -94,7 +94,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-4">
           <div className="text-sm font-bold text-slate-900">
             Default reminder cadence
           </div>
@@ -108,7 +108,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
                 value={defaultBeforeDueDays}
                 onChange={(e) => setDefaultBeforeDueDays(e.target.value)}
                 type="number"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
             </Field>
 
@@ -117,7 +117,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
                 value={defaultEveryDays}
                 onChange={(e) => setDefaultEveryDays(e.target.value)}
                 type="number"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
             </Field>
 
@@ -126,7 +126,7 @@ export function ReminderSettingsDrawer({ open, onClose, onSave }) {
                 value={defaultOverdueEveryDays}
                 onChange={(e) => setDefaultOverdueEveryDays(e.target.value)}
                 type="number"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
             </Field>
           </div>

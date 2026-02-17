@@ -7,7 +7,7 @@ export default function RequireAuth({ roles }) {
   if (loading) {
     return (
       <div className="min-h-screen grid place-items-center bg-slate-50 text-slate-700">
-        <div className="rounded-2xl bg-white px-6 py-4 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-xl bg-white px-6 py-4 shadow-sm ring-1 ring-slate-200">
           Loading…
         </div>
       </div>

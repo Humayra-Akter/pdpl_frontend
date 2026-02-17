@@ -30,7 +30,7 @@ export default function Dpo() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="text-lg font-semibold">DPO Work Queue (next)</div>
           <p className="mt-2 text-slate-600">
             We’ll add: approvals, review requests, assign/return, and audit

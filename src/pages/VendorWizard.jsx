@@ -198,7 +198,6 @@ export default function VendorWizard() {
         return;
       }
 
-
       // redirect to list after submit (requested)
       nav("/admin/vendor");
     } finally {
@@ -208,7 +207,7 @@ export default function VendorWizard() {
 
   if (!item) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
         <div className="text-sm font-medium text-slate-500">Loading...</div>
       </div>
     );
@@ -238,7 +237,7 @@ export default function VendorWizard() {
   return (
     <div className="space-y-6">
       {/* topper */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-rose-50">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
@@ -639,7 +638,7 @@ export default function VendorWizard() {
                   </select>
                 </Field>
 
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="text-sm font-medium text-slate-900">
                     Recommendations / Required Actions
                   </div>
@@ -773,7 +772,7 @@ export default function VendorWizard() {
           onClick={() => setShowDone(false)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-5 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-lg font-semibold text-slate-900">

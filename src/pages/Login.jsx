@@ -64,7 +64,7 @@ export default function Login() {
       const data = await apiPost("/auth/login", { email, password });
 
       // store token + user
-      
+
       localStorage.setItem("pdpl_token", data.token);
       localStorage.setItem("pdpl_user", JSON.stringify(data.user));
 
@@ -105,7 +105,7 @@ export default function Login() {
           className="space-y-8"
         >
           <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 2l7 4v6c0 5-3 9-7 10-4-1-7-5-7-10V6l7-4z"
@@ -159,7 +159,7 @@ export default function Login() {
                 key={x.title}
                 whileHover={{ y: -2 }}
                 transition={{ duration: 0.15 }}
-                className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10 backdrop-blur"
+                className="rounded-xl bg-white/5 p-4 ring-1 ring-white/10 backdrop-blur"
               >
                 <div className="text-sm font-semibold">{x.title}</div>
                 <div className="mt-1 text-sm text-white/60">{x.desc}</div>
@@ -187,7 +187,7 @@ export default function Login() {
           transition={{ duration: 0.55 }}
           className="mx-auto w-full max-w-md"
         >
-          <div className="rounded-3xl bg-white/6 p-8 ring-1 ring-white/12 backdrop-blur">
+          <div className="rounded-xl bg-white/6 p-8 ring-1 ring-white/12 backdrop-blur">
             <div className="mb-6">
               <div className="text-2xl font-semibold tracking-tight">
                 Welcome back
@@ -262,7 +262,7 @@ export default function Login() {
                 {loading ? "Signing in..." : "Sign in"}
               </button>
 
-              <div className="rounded-2xl bg-white/5 p-4 text-xs text-white/60 ring-1 ring-white/10">
+              <div className="rounded-xl bg-white/5 p-4 text-xs text-white/60 ring-1 ring-white/10">
                 By signing in, you agree to your organization’s data protection
                 policies and usage monitoring for compliance.
               </div>

@@ -171,7 +171,7 @@ export function TrainingsPanel({
                       <div className="inline-flex flex-wrap justify-end gap-2">
                         <button
                           onClick={() => onOpenBuilder(t.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-1 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1 text-sm font-semibold text-slate-800 hover:bg-slate-50"
                           type="button"
                         >
                           <Edit3 className="h-4 w-4" />
@@ -180,7 +180,7 @@ export function TrainingsPanel({
 
                         <button
                           onClick={() => onOpenAssign(t.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-2 py-1 text-sm font-semibold text-white hover:bg-indigo-700"
+                          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-2 py-1 text-sm font-semibold text-white hover:bg-indigo-700"
                           type="button"
                         >
                           Assign <ArrowUpRight className="h-4 w-4" />
@@ -188,7 +188,7 @@ export function TrainingsPanel({
 
                         <button
                           onClick={() => onDelete(t.id)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-2 py-1 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                          className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-2 py-1 text-sm font-semibold text-rose-700 hover:bg-rose-100"
                           type="button"
                         >
                           <Trash2 className="h-4 w-4" />

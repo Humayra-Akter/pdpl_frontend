@@ -712,6 +712,13 @@ export async function resetUserPassword(id) {
   });
 }
 
+export async function activateUser(id) {
+  return api(`/admin/users/${id}/activate`, {
+    method: "POST",
+  });
+}
+
+
 export async function deactivateUser(id) {
   return api(`/admin/users/${id}`, {
     method: "DELETE",

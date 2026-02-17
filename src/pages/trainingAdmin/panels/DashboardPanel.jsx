@@ -31,7 +31,7 @@ export function DashboardPanel({ trainings, assignments, users }) {
           perTraining.map((row) => (
             <div
               key={row.t.id}
-              className="rounded-3xl border border-slate-200 bg-white p-4"
+              className="rounded-xl border border-slate-200 bg-white p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -101,7 +101,7 @@ export function DashboardPanel({ trainings, assignments, users }) {
             </div>
           ))
         ) : (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-8">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8">
             <div className="text-sm font-bold text-slate-900">
               No published training yet
             </div>
@@ -112,7 +112,7 @@ export function DashboardPanel({ trainings, assignments, users }) {
           </div>
         )}
 
-        <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-emerald-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-emerald-50 p-4">
           <div className="text-sm font-bold text-slate-900">
             Audit-ready definition (Training)
           </div>

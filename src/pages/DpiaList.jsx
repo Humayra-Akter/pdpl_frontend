@@ -125,7 +125,7 @@ export default function DpiaList() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-emerald-50">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
@@ -200,7 +200,7 @@ export default function DpiaList() {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4 flex items-center justify-between">
           <div>
             <div className="text-sm font-semibold text-slate-900">
@@ -250,7 +250,7 @@ export default function DpiaList() {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-5 py-10">
-                    <div className="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200">
+                    <div className="rounded-xl bg-slate-50 p-6 ring-1 ring-slate-200">
                       <div className="text-sm font-semibold text-slate-900">
                         No DPIAs found
                       </div>

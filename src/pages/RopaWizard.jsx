@@ -132,7 +132,7 @@ function Card({ children, className = "" }) {
   return (
     <div
       className={[
-        "rounded-2xl bg-white shadow-sm ring-1 ring-slate-200",
+        "rounded-xl bg-white shadow-sm ring-1 ring-slate-200",
         className,
       ].join(" ")}
     >
@@ -246,7 +246,7 @@ function VerticalStepper({ stepKey, onGoto, completionByKey, status }) {
               onClick={() => unlocked && onGoto(s.key)}
               disabled={!unlocked}
               className={[
-                "w-full group flex items-center gap-3 rounded-2xl px-3 py-3 text-left",
+                "w-full group flex items-center gap-3 rounded-xl px-3 py-3 text-left",
                 "ring-1 transition disabled:opacity-60 disabled:cursor-not-allowed",
                 active
                   ? "bg-blue-50 ring-blue-200"
@@ -610,7 +610,7 @@ export default function RopaWizard() {
             {/* Instructions */}
             {stepKey === "INSTRUCTIONS" && (
               <div className="space-y-4">
-                <div className="rounded-2xl bg-blue-50 p-4 ring-1 ring-blue-100">
+                <div className="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-100">
                   <div className="text-sm font-semibold text-blue-900">
                     Instructions for Using the RoPA Template
                   </div>
@@ -855,7 +855,7 @@ export default function RopaWizard() {
             {/* Personal data (REPLACED with relevant fields) */}
             {stepKey === "PERSONAL_DATA" && (
               <div className="grid gap-5">
-                <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+                <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
                   <div className="text-sm font-semibold text-slate-900">
                     Personal Data Categories
                   </div>
@@ -1380,7 +1380,7 @@ export default function RopaWizard() {
             {/* Review */}
             {stepKey === "REVIEW" && (
               <div className="space-y-4">
-                <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+                <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
                   <div className="text-sm font-semibold text-slate-900">
                     RoPA Review & Approval
                   </div>
@@ -1389,7 +1389,7 @@ export default function RopaWizard() {
                   </div>
                 </div>
 
-                <pre className="rounded-2xl bg-slate-900 p-4 text-xs text-slate-100 overflow-auto ring-1 ring-slate-800">
+                <pre className="rounded-xl bg-slate-900 p-4 text-xs text-slate-100 overflow-auto ring-1 ring-slate-800">
                   {JSON.stringify(ropa?.formData || {}, null, 2)}
                 </pre>
 

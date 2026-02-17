@@ -119,7 +119,7 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
             Cancel
@@ -129,7 +129,7 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
             onClick={handleSave}
             disabled={!canSave}
             className={cn(
-              "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
+              "rounded-xl px-4 py-2 text-sm font-semibold text-white",
               canSave
                 ? "bg-indigo-600 hover:bg-indigo-700"
                 : "bg-slate-300 cursor-not-allowed",
@@ -147,7 +147,7 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={4}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             placeholder="Type the question here..."
           />
         </Field>
@@ -157,7 +157,7 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               {DIFFICULTY.map((d) => (
                 <option key={d} value={d}>
@@ -171,13 +171,13 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
             <input
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               placeholder="fundamentals, incident, breach"
             />
           </Field>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-sm font-bold text-slate-900">Answer options</div>
           <div className="mt-1 text-sm font-semibold text-slate-600">
             Provide up to 4 options. Choose the correct answer.
@@ -193,7 +193,7 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
             {options.map((o, i) => (
               <div
                 key={i}
-                className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-3 md:flex-row md:items-center"
+                className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 md:flex-row md:items-center"
               >
                 <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
                   <input
@@ -208,7 +208,7 @@ export function QuestionDrawer({ open, onClose, onSave, initialQuestion }) {
                 <input
                   value={o}
                   onChange={(e) => setOpt(i, e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                   placeholder={`Option ${i + 1}`}
                 />
               </div>

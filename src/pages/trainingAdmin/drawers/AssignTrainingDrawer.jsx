@@ -90,7 +90,7 @@ export function AssignTrainingDrawer({
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
             Cancel
@@ -100,7 +100,7 @@ export function AssignTrainingDrawer({
             onClick={handleAssign}
             disabled={!canAssign}
             className={cn(
-              "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
+              "rounded-xl px-4 py-2 text-sm font-semibold text-white",
               canAssign
                 ? "bg-indigo-600 hover:bg-indigo-700"
                 : "bg-slate-300 cursor-not-allowed",
@@ -113,7 +113,7 @@ export function AssignTrainingDrawer({
       }
     >
       {!training ? (
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
           <div className="text-sm font-bold text-slate-900">
             No training selected
           </div>
@@ -123,7 +123,7 @@ export function AssignTrainingDrawer({
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="text-sm font-bold text-slate-900">Policy</div>
             <div className="mt-1 text-sm font-semibold text-slate-600">
               Assignment scope is fixed to{" "}
@@ -137,11 +137,11 @@ export function AssignTrainingDrawer({
               value={dueAt}
               onChange={(e) => setDueAt(e.target.value)}
               type="date"
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             />
           </Field>
 
-          <div className="rounded-3xl border border-slate-200 bg-white">
+          <div className="rounded-xl border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-4 py-3">
               <div className="text-sm font-bold text-slate-900">
                 Preview assignees
@@ -157,7 +157,7 @@ export function AssignTrainingDrawer({
                 {preview.map((p) => (
                   <div
                     key={p.user.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
                   >
                     <div>
                       <div className="text-sm font-bold text-slate-900">

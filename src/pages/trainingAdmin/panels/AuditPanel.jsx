@@ -9,7 +9,7 @@ export function AuditPanel({ audit }) {
       />
 
       <div className="p-5">
-        <div className="overflow-hidden rounded-3xl border border-slate-200">
+        <div className="overflow-hidden rounded-xl border border-slate-200">
           <table className="w-full">
             <thead className="bg-slate-50">
               <tr className="text-left text-xs font-bold text-slate-600">
@@ -57,7 +57,7 @@ export function AuditPanel({ audit }) {
           </table>
         </div>
 
-        <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-sm font-bold text-slate-900">Export</div>
           <div className="mt-1 text-sm font-semibold text-slate-600">
             Export should include: training definitions, assignment list,

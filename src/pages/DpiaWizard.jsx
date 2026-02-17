@@ -45,7 +45,7 @@ function Card({ children, className = "" }) {
   return (
     <div
       className={[
-        "rounded-2xl bg-white shadow-sm ring-1 ring-slate-200",
+        "rounded-xl bg-white shadow-sm ring-1 ring-slate-200",
         "transition-all duration-200",
         className,
       ].join(" ")}
@@ -210,7 +210,7 @@ export default function DpiaWizard() {
 
   if (!dpia && !err) {
     return (
-      <div className="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+      <div className="rounded-xl bg-white p-6 ring-1 ring-slate-200">
         <div className="animate-pulse space-y-3">
           <div className="h-4 w-48 rounded bg-slate-100" />
           <div className="h-8 w-2/3 rounded bg-slate-100" />
@@ -249,7 +249,7 @@ export default function DpiaWizard() {
   return (
     <div className="space-y-5">
       {/* Hero header */}
-      <div className="rounded-2xl border bg-gradient-to-r from-indigo-50 via-white to-emerald-50 border-gray-200 bg-white p-6 space-y-4">
+      <div className="rounded-xl border bg-gradient-to-r from-indigo-50 via-white to-emerald-50 border-gray-200 bg-white p-6 space-y-4">
         {/* Top row */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -281,7 +281,7 @@ export default function DpiaWizard() {
         </div>
 
         {/* Progress bar */}
-         <div>
+        <div>
           <div className="h-2 w-full rounded-full bg-slate-100">
             <div
               className="h-2 rounded-full bg-blue-800"
@@ -291,7 +291,7 @@ export default function DpiaWizard() {
           <div className="mt-2 text-xs text-slate-500">
             All steps completed and submitted
           </div>
-        </div> 
+        </div>
       </div>
 
       {/* Stepper */}
@@ -307,7 +307,7 @@ export default function DpiaWizard() {
                 key={s.key}
                 onClick={() => gotoStep(s.key)}
                 className={[
-                  "group flex items-center gap-3 rounded-2xl px-3 py-3 text-left",
+                  "group flex items-center gap-3 rounded-xl px-3 py-3 text-left",
                   "ring-1 transition",
                   active
                     ? "bg-indigo-50 ring-indigo-200"
@@ -503,7 +503,7 @@ export default function DpiaWizard() {
           {/* SUMMARY */}
           {stepKey === "SUMMARY" && (
             <div className="space-y-4">
-              <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+              <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
                 <div className="text-sm font-semibold text-slate-900">
                   Review snapshot
                 </div>
@@ -512,7 +512,7 @@ export default function DpiaWizard() {
                 </div>
               </div>
 
-              <pre className="rounded-2xl bg-slate-900 p-4 text-xs text-slate-100 overflow-auto ring-1 ring-slate-800">
+              <pre className="rounded-xl bg-slate-900 p-4 text-xs text-slate-100 overflow-auto ring-1 ring-slate-800">
                 {JSON.stringify(dpia.formData, null, 2)}
               </pre>
 

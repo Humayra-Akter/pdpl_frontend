@@ -131,7 +131,7 @@ export function TrainingBuilderDrawer({
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={onClose}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             type="button"
           >
             Close
@@ -142,7 +142,7 @@ export function TrainingBuilderDrawer({
               onClick={handleSave}
               disabled={!canSave}
               className={cn(
-                "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
+                "rounded-xl px-4 py-2 text-sm font-semibold text-white",
                 canSave
                   ? "bg-indigo-600 hover:bg-indigo-700"
                   : "bg-slate-300 cursor-not-allowed",
@@ -156,7 +156,7 @@ export function TrainingBuilderDrawer({
               onClick={handleRequestApproval}
               disabled={!canSave}
               className={cn(
-                "rounded-2xl px-4 py-2 text-sm font-semibold text-white",
+                "rounded-xl px-4 py-2 text-sm font-semibold text-white",
                 canSave
                   ? "bg-amber-600 hover:bg-amber-700"
                   : "bg-slate-300 cursor-not-allowed",
@@ -170,7 +170,7 @@ export function TrainingBuilderDrawer({
       }
     >
       {!local ? (
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
           <div className="text-sm font-bold text-slate-900">
             No training selected
           </div>
@@ -185,7 +185,7 @@ export function TrainingBuilderDrawer({
               <input
                 value={local.title || ""}
                 onChange={(e) => patch({ title: e.target.value })}
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
             </Field>
 
@@ -193,7 +193,7 @@ export function TrainingBuilderDrawer({
               <input
                 value={local.status || ""}
                 readOnly
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700"
               />
             </Field>
 
@@ -202,7 +202,7 @@ export function TrainingBuilderDrawer({
                 value={local.validityDays ?? ""}
                 onChange={(e) => patch({ validityDays: e.target.value })}
                 type="number"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
             </Field>
 
@@ -217,12 +217,12 @@ export function TrainingBuilderDrawer({
                   patch({ dueAt: new Date(e.target.value).toISOString() })
                 }
                 type="date"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
             </Field>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white">
+          <div className="rounded-xl border border-slate-200 bg-white">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
               <div>
                 <div className="text-sm font-bold text-slate-900">Modules</div>
@@ -234,7 +234,7 @@ export function TrainingBuilderDrawer({
 
               <button
                 onClick={addModule}
-                className="rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                className="rounded-xl bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
                 type="button"
               >
                 Add Module
@@ -251,7 +251,7 @@ export function TrainingBuilderDrawer({
               {(local.modules || []).map((m, idx) => (
                 <div
                   key={m.id || idx}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -264,7 +264,7 @@ export function TrainingBuilderDrawer({
                           onChange={(e) =>
                             updateModule(idx, { title: e.target.value })
                           }
-                          className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                         />
                       </Field>
 
@@ -278,7 +278,7 @@ export function TrainingBuilderDrawer({
                             onChange={(e) =>
                               updateModule(idx, { contentType: e.target.value })
                             }
-                            className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                           >
                             <option value="" disabled>
                               Select...
@@ -307,7 +307,7 @@ export function TrainingBuilderDrawer({
 
                           <button
                             onClick={() => removeModule(idx)}
-                            className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                            className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
                             type="button"
                           >
                             Remove
@@ -320,7 +320,7 @@ export function TrainingBuilderDrawer({
               ))}
 
               {!local.modules?.length ? (
-                <div className="rounded-3xl border border-slate-200 bg-white p-6">
+                <div className="rounded-xl border border-slate-200 bg-white p-6">
                   <div className="text-sm font-bold text-slate-900">
                     No modules yet
                   </div>
@@ -332,7 +332,7 @@ export function TrainingBuilderDrawer({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="text-sm font-bold text-slate-900">Quiz</div>
             <div className="mt-1 text-sm font-semibold text-slate-600">
               Keep quiz mandatory for trainings (SG).
@@ -346,7 +346,7 @@ export function TrainingBuilderDrawer({
                     patchQuiz({ questionCount: Number(e.target.value) })
                   }
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -357,7 +357,7 @@ export function TrainingBuilderDrawer({
                     patchQuiz({ passScore: Number(e.target.value) })
                   }
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -368,13 +368,13 @@ export function TrainingBuilderDrawer({
                     patchQuiz({ attemptsAllowed: Number(e.target.value) })
                   }
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="text-sm font-bold text-slate-900">Reminders</div>
             <div className="mt-1 text-sm font-semibold text-slate-600">
               Configure training-level reminder cadence.
@@ -414,7 +414,7 @@ export function TrainingBuilderDrawer({
                     patchReminder({ everyDays: Number(e.target.value) })
                   }
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -425,7 +425,7 @@ export function TrainingBuilderDrawer({
                     patchReminder({ beforeDueDays: Number(e.target.value) })
                   }
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
 
@@ -436,7 +436,7 @@ export function TrainingBuilderDrawer({
                     patchReminder({ overdueEveryDays: Number(e.target.value) })
                   }
                   type="number"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
                 />
               </Field>
             </div>

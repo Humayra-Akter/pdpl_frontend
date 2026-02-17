@@ -154,7 +154,7 @@ export default function AdminLayout() {
                   </div>
                 ) : (
                   <div
-                    className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100"
+                    className="grid h-10 w-10 place-items-center rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100"
                     style={{ color: "var(--pdpl-primary)" }}
                     title="PDPL Secure Portal"
                   >
@@ -309,7 +309,7 @@ export default function AdminLayout() {
         <main className={["flex-1", mainPad].join(" ")}>
           <div className="px-6 py-6">
             {/* Top bar */}
-            <header className="sticky top-0 z-10 mb-6 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 backdrop-blur">
+            <header className="sticky top-0 z-10 mb-6 rounded-xl border border-slate-200 bg-white/80 px-5 py-4 backdrop-blur">
               <div className="flex items-center justify-between">
                 <div>
                   <Breadcrumbs />

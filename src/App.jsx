@@ -16,7 +16,7 @@ import VendorList from "./pages/VendorList";
 import VendorWizard from "./pages/VendorWizard";
 import TrainingAdmin from "./pages/TrainingAdmin";
 import UserManagement from "./pages/UserManagement";
-import UserDetails from "./pages/UserDetails";
+import UserAnalytics from "./pages/UserAnalytics";
 
 export default function App() {
   return (
@@ -50,7 +50,7 @@ export default function App() {
 
           {/* Users */}
           <Route path="/admin/users" element={<UserManagement />} />
-          <Route path="/admin/users/:id" element={<UserDetails />} />
+          <Route path="/admin/users/analytics" element={<UserAnalytics />} />
         </Route>
       </Route>
 

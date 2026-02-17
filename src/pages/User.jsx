@@ -30,7 +30,7 @@ export default function User() {
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="text-lg font-semibold">Your Requests (next)</div>
           <p className="mt-2 text-slate-600">
             We’ll add: submit DPIA / RoPA, upload documents, track approvals,

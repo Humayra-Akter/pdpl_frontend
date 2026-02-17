@@ -140,7 +140,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon }) {
   const t = tones[tone] || tones.indigo;
 
   return (
-    <div className={["rounded-3xl ring-1 p-4", t.wrap].join(" ")}>
+    <div className={["rounded-xl ring-1 p-4", t.wrap].join(" ")}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className={["text-xs font-bold", t.title].join(" ")}>
@@ -155,7 +155,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon }) {
         </div>
         <div
           className={[
-            "h-11 w-11 rounded-2xl grid place-items-center ring-1",
+            "h-11 w-11 rounded-xl grid place-items-center ring-1",
             t.iconWrap,
           ].join(" ")}
         >
@@ -268,7 +268,7 @@ export default function VendorList() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-green-50">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
@@ -344,7 +344,7 @@ export default function VendorList() {
       </div>
 
       {/* Search + filters row */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-1 items-center gap-2">
             <div className="relative w-full max-w-xl">
@@ -353,7 +353,7 @@ export default function VendorList() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search by title..."
-                className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
               />
               {q ? (
                 <button
@@ -371,7 +371,7 @@ export default function VendorList() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="h-10 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Status</option>
               <option value="DRAFT">Draft</option>
@@ -383,7 +383,7 @@ export default function VendorList() {
             <select
               value={risk}
               onChange={(e) => setRisk(e.target.value)}
-              className="h-10 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Risk</option>
               <option value="LOW">Low</option>
@@ -393,7 +393,7 @@ export default function VendorList() {
 
             <button
               onClick={load}
-              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 hover:bg-slate-50"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 hover:bg-slate-50"
             >
               <RefreshCw className="h-4 w-4" />
               Apply
@@ -403,7 +403,7 @@ export default function VendorList() {
       </div>
 
       {/* table */}
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div>
             <div className="text-sm font-semibold text-slate-900">
@@ -452,7 +452,7 @@ export default function VendorList() {
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-50 ring-1 ring-indigo-100">
+                          <div className="grid h-10 w-10 place-items-center rounded-xl bg-indigo-50 ring-1 ring-indigo-100">
                             <ClipboardList className="h-5 w-5 text-indigo-700" />
                           </div>
                           <div className="min-w-0">
@@ -529,7 +529,7 @@ export default function VendorList() {
                       <td className="px-5 py-4 text-right">
                         <button
                           onClick={() => nav(`/admin/vendor/${x.id}`)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-indigo-600 px-3 py-1 text-sm font-medium text-white hover:bg-indigo-700"
+                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-indigo-600 px-3 py-1 text-sm font-medium text-white hover:bg-indigo-700"
                         >
                           Open
                           <ArrowUpRight className="h-4 w-4" />
@@ -549,7 +549,7 @@ export default function VendorList() {
                     </div>
                     <button
                       onClick={onCreate}
-                      className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+                      className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700"
                     >
                       <Plus className="h-4 w-4" />
                       New Agreement

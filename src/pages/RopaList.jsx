@@ -163,7 +163,7 @@ function SummaryCard({ title, subtitle, value, percent, tone, icon: Icon }) {
   return (
     <div
       className={[
-        "rounded-3xl px-5 py-3 ring-1 shadow-lg",
+        "rounded-xl px-5 py-3 ring-1 shadow-lg",
         "transition hover:shadow-lg hover:-translate-y-[1px]",
         "flex items-center justify-between gap-4",
         toneBgRingClass(tone),
@@ -350,7 +350,7 @@ function Modal({ open, title, children, onClose, busy }) {
         onClick={() => (busy ? null : onClose())}
       />
       <div className="absolute inset-0 flex items-center justify-center p-4">
-        <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
+        <div className="w-full max-w-xl rounded-xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -582,7 +582,7 @@ export default function RopaList() {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-green-50">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
@@ -715,7 +715,7 @@ export default function RopaList() {
           </div>
 
           {/* Legend moved to bottom */}
-          <div className="mt-5 flex flex-wrap items-center gap-2 rounded-2xl ">
+          <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl ">
             <span className="text-xs font-semibold text-slate-700">
               Legend:
             </span>
@@ -756,7 +756,7 @@ export default function RopaList() {
       />
 
       {/* Table */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4">
           <div className="text-sm font-semibold text-slate-900">
             Recent Activities
@@ -815,7 +815,7 @@ export default function RopaList() {
               ) : pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-10">
-                    <div className="rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200">
+                    <div className="rounded-xl bg-slate-50 p-6 ring-1 ring-slate-200">
                       <div className="text-sm font-semibold text-slate-900">
                         No activities found
                       </div>
@@ -926,7 +926,7 @@ export default function RopaList() {
         busy={creating}
       >
         <div className="space-y-4">
-          <div className="rounded-2xl bg-indigo-50 p-4 ring-1 ring-indigo-200">
+          <div className="rounded-xl bg-indigo-50 p-4 ring-1 ring-indigo-200">
             <div className="text-sm font-semibold text-indigo-900">
               Start a new RoPA record
             </div>

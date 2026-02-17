@@ -52,7 +52,7 @@ export function QuestionBankPanel({
         right={
           <button
             onClick={() => onCreate?.()}
-            className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700"
             type="button"
           >
             <Plus className="h-4 w-4" />
@@ -69,7 +69,7 @@ export function QuestionBankPanel({
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search questions..."
-              className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             />
             {q ? (
               <button
@@ -86,7 +86,7 @@ export function QuestionBankPanel({
             <select
               value={tag}
               onChange={(e) => setTag(e.target.value)}
-              className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               {tags.map((t) => (
                 <option key={t} value={t}>
@@ -98,7 +98,7 @@ export function QuestionBankPanel({
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="h-11 rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100"
             >
               <option value="ALL">All Difficulty</option>
               {DIFFICULTY.map((d) => (
@@ -110,7 +110,7 @@ export function QuestionBankPanel({
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-slate-200">
+        <div className="overflow-hidden rounded-xl border border-slate-200">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
@@ -212,7 +212,7 @@ export function QuestionBankPanel({
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="text-sm font-bold text-slate-900">Tip</div>
           <div className="mt-1 text-sm font-semibold text-slate-600">
             Keep quizzes mandatory for every training (SG). Questions should be
