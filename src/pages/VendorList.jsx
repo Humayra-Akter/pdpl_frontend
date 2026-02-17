@@ -1,3 +1,4 @@
+// src/pages/VendorList.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,6 +17,10 @@ import {
 import { listVendor, createVendor } from "../lib/admin";
 
 /* ------------------ helpers ------------------ */
+function cn(...xs) {
+  return xs.filter(Boolean).join(" ");
+}
+
 function clamp(n, a, b) {
   const x = Number(n);
   if (Number.isNaN(x)) return a;
@@ -50,6 +55,22 @@ function riskFromScore(score) {
   return "LOW";
 }
 
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+  });
+}
+
+function monthKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/* ------------------ pagination ------------------ */
 function Pagination({ page, totalPages, onPage }) {
   if (totalPages <= 1) return null;
 
@@ -71,7 +92,8 @@ function Pagination({ page, totalPages, onPage }) {
       <button
         onClick={() => onPage(Math.max(1, page - 1))}
         disabled={page === 1}
-        className={[btnBase, btnIdle, "px-3 disabled:opacity-50"].join(" ")}
+        className={cn(btnBase, btnIdle, "px-3 disabled:opacity-50")}
+        type="button"
       >
         <ChevronLeft className="h-4 w-4" />
         Prev
@@ -86,7 +108,8 @@ function Pagination({ page, totalPages, onPage }) {
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={[btnBase, p === page ? btnActive : btnIdle].join(" ")}
+            className={cn(btnBase, p === page ? btnActive : btnIdle)}
+            type="button"
           >
             {p}
           </button>
@@ -96,7 +119,8 @@ function Pagination({ page, totalPages, onPage }) {
       <button
         onClick={() => onPage(Math.min(totalPages, page + 1))}
         disabled={page === totalPages}
-        className={[btnBase, btnIdle, "px-3 disabled:opacity-50"].join(" ")}
+        className={cn(btnBase, btnIdle, "px-3 disabled:opacity-50")}
+        type="button"
       >
         Next
         <ChevronRight className="h-4 w-4" />
@@ -105,65 +129,174 @@ function Pagination({ page, totalPages, onPage }) {
   );
 }
 
-function KpiCard({ title, value, hint, tone, icon: Icon }) {
+/* ------------------ fancy KPI bits ------------------ */
+
+function ProgressBar({ value = 0, tone = "indigo", labelRight }) {
+  const pct = clamp(value, 0, 100);
+
+  const toneMap = {
+    indigo: "bg-indigo-600",
+    emerald: "bg-emerald-600",
+    amber: "bg-amber-600",
+    rose: "bg-rose-600",
+    slate: "bg-slate-700",
+  };
+
+  return (
+    <div className="mt-3">
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] font-semibold text-slate-600">Progress</div>
+        <div className="text-[11px] font-extrabold text-slate-800">
+          {labelRight ?? `${pct}%`}
+        </div>
+      </div>
+      <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
+        <div
+          className={cn("h-full rounded-full", toneMap[tone] || toneMap.indigo)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function KpiCard({
+  title,
+  value,
+  hint,
+  tone = "indigo",
+  icon: Icon,
+  progress = 0,
+  progressLabel,
+  deltaLabel = "vs prev",
+ 
+}) {
   const tones = {
     indigo: {
-      wrap: "bg-indigo-50 ring-indigo-200",
-      title: "text-indigo-900",
-      hint: "text-indigo-900/70",
-      value: "text-indigo-950",
-      iconWrap: "bg-indigo-100 text-indigo-700 ring-indigo-200",
+      ring: "ring-indigo-200 shadow-md hover:shadow-lg transition",
+      glow: "from-indigo-500/15 to-emerald-500/10",
+      icon: "bg-indigo-600 text-white",
+      progress: "indigo",
     },
     amber: {
-      wrap: "bg-amber-50 ring-amber-200",
-      title: "text-amber-900",
-      hint: "text-amber-900/70",
-      value: "text-amber-950",
-      iconWrap: "bg-amber-100 text-amber-700 ring-amber-200",
+      ring: "ring-amber-200 shadow-md hover:shadow-lg transition",
+      glow: "from-amber-500/15 to-indigo-500/10",
+      icon: "bg-amber-600 text-white",
+      progress: "amber",
     },
     emerald: {
-      wrap: "bg-emerald-50 ring-emerald-200",
-      title: "text-emerald-900",
-      hint: "text-emerald-900/70",
-      value: "text-emerald-950",
-      iconWrap: "bg-emerald-100 text-emerald-700 ring-emerald-200",
+      ring: "ring-emerald-200 shadow-md hover:shadow-lg transition",
+      glow: "from-emerald-500/15 to-sky-500/10",
+      icon: "bg-emerald-600 text-white",
+      progress: "emerald",
     },
     rose: {
-      wrap: "bg-rose-50 ring-rose-200",
-      title: "text-rose-900",
-      hint: "text-rose-900/70",
-      value: "text-rose-950",
-      iconWrap: "bg-rose-100 text-rose-700 ring-rose-200",
+      ring: "ring-rose-200 shadow-md hover:shadow-lg transition",
+      glow: "from-rose-500/15 to-amber-500/10",
+      icon: "bg-rose-600 text-white",
+      progress: "rose",
     },
   };
 
   const t = tones[tone] || tones.indigo;
 
+  const isPos = typeof delta === "number" && delta > 0;
+  const isNeg = typeof delta === "number" && delta < 0;
+  const deltaCls = isPos
+    ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
+    : isNeg
+      ? "bg-rose-50 text-rose-800 ring-rose-200"
+      : "bg-slate-50 text-slate-700 ring-slate-200";
+
   return (
-    <div className={["rounded-xl ring-1 p-4", t.wrap].join(" ")}>
-      <div className="flex items-start justify-between gap-3">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1",
+        t.ring,
+      )}
+    >
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-0 bg-gradient-to-br",
+          t.glow,
+        )}
+      />
+
+      <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className={["text-xs font-bold", t.title].join(" ")}>
+          <div className="text-[11px] font-extrabold tracking-wide text-slate-600">
             {title}
           </div>
-          <div className={["mt-1 text-3xl font-bold", t.value].join(" ")}>
-            {value}
+
+          <div className="mt-1 flex flex-wrap items-end gap-2">
+            <div className="text-3xl font-extrabold text-slate-950">
+              {value}
+            </div>
+
+            {typeof delta === "number" ? (
+              <span
+                className={cn(
+                  "mb-1 inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-extrabold ring-1",
+                  deltaCls,
+                )}
+                title={deltaLabel}
+              >
+                {isPos ? "+" : ""}
+                {delta}
+                <span className="font-semibold opacity-70">{deltaLabel}</span>
+              </span>
+            ) : null}
           </div>
-          <div className={["mt-1 text-xs font-semibold", t.hint].join(" ")}>
+
+          <div className="mt-1 text-xs font-semibold text-slate-600">
             {hint}
           </div>
         </div>
-        <div
-          className={[
-            "h-11 w-11 rounded-xl grid place-items-center ring-1",
-            t.iconWrap,
-          ].join(" ")}
-        >
-          <Icon className="h-5 w-5" />
+
+        <div className="flex flex-col items-end gap-2">
+          <div
+            className={cn(
+              "grid h-11 w-11 place-items-center rounded-2xl shadow-sm ring-1 ring-white/50",
+              t.icon,
+            )}
+          >
+            <Icon className="h-5 w-5" />
+          </div>
+
         </div>
+      </div>
+
+      <div className="relative">
+        <ProgressBar
+          value={progress}
+          tone={t.progress}
+          labelRight={progressLabel}
+        />
       </div>
     </div>
   );
+}
+
+/* ------------------ time series builders for KPI  ------------------ */
+function buildMonthlySeries(rawItems, months = 8, pick = () => true) {
+  const now = new Date();
+  const buckets = [];
+  for (let i = months - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    buckets.push({ key: monthKey(d), value: 0 });
+  }
+  const idx = new Map(buckets.map((b, i) => [b.key, i]));
+
+  for (const x of rawItems || []) {
+    if (!pick(x)) continue;
+    const dt = new Date(x.createdAt);
+    if (!Number.isFinite(dt.getTime())) continue;
+    const k = monthKey(dt);
+    const i = idx.get(k);
+    if (i === undefined) continue;
+    buckets[i].value += 1;
+  }
+  return buckets.map((b) => b.value);
 }
 
 /* ------------------ page ------------------ */
@@ -186,7 +319,6 @@ export default function VendorList() {
   async function load() {
     setLoading(true);
     try {
-      // backend supports: { status, search }
       const params = {};
       if (status !== "ALL") params.status = status;
       if (q.trim()) params.search = q.trim();
@@ -212,9 +344,9 @@ export default function VendorList() {
   }, [q, status, risk]);
 
   const items = useMemo(() => {
-    // risk filter is client-side (backend doesn't filter it)
     let xs = [...raw];
 
+    // risk filter is client-side
     if (risk !== "ALL") {
       xs = xs.filter((x) => {
         const r = x.riskLevel || riskFromScore(x.totalScore);
@@ -227,19 +359,70 @@ export default function VendorList() {
 
   const kpis = useMemo(() => {
     const total = items.length;
+
     const completed = items.filter(
       (x) => String(x.status).toUpperCase() === "COMPLETED",
     ).length;
+
     const inProgress = items.filter((x) =>
-      ["IN_PROGRESS", "SUBMITTED"].includes(String(x.status).toUpperCase()),
+      ["IN_PROGRESS", "SUBMITTED", "DRAFT"].includes(
+        String(x.status).toUpperCase(),
+      ),
     ).length;
+
     const highRisk = items.filter((x) => {
       const r = x.riskLevel || riskFromScore(x.totalScore);
       return String(r).toUpperCase() === "HIGH";
     }).length;
 
-    return { total, completed, inProgress, highRisk };
+    const completionRate = Math.round((completed / Math.max(1, total)) * 100);
+    const riskRate = Math.round((highRisk / Math.max(1, total)) * 100);
+
+    return { total, completed, inProgress, highRisk, completionRate, riskRate };
   }, [items]);
+
+  // “previous period” for deltas: compare last 30 days vs prior 30 days (by createdAt)
+  const deltas = useMemo(() => {
+    const now = new Date();
+    const a0 = new Date(now);
+    a0.setDate(a0.getDate() - 30);
+    const a1 = new Date(now);
+    a1.setDate(a1.getDate() - 60);
+
+    const inRange = (x, from, to) => {
+      const dt = new Date(x.createdAt);
+      return Number.isFinite(dt.getTime()) && dt >= from && dt <= to;
+    };
+
+    const cur = raw.filter((x) => inRange(x, a0, now));
+    const prev = raw.filter((x) => inRange(x, a1, a0));
+
+    const count = (xs) => xs.length;
+
+    const completedCount = (xs) =>
+      xs.filter((x) => String(x.status).toUpperCase() === "COMPLETED").length;
+
+    const highRiskCount = (xs) =>
+      xs.filter((x) => {
+        const r = x.riskLevel || riskFromScore(x.totalScore);
+        return String(r).toUpperCase() === "HIGH";
+      }).length;
+
+    const inProgCount = (xs) =>
+      xs.filter((x) =>
+        ["IN_PROGRESS", "SUBMITTED", "DRAFT"].includes(
+          String(x.status).toUpperCase(),
+        ),
+      ).length;
+
+    return {
+      total: count(cur) - count(prev),
+      completed: completedCount(cur) - completedCount(prev),
+      inProgress: inProgCount(cur) - inProgCount(prev),
+      highRisk: highRiskCount(cur) - highRiskCount(prev),
+    };
+  }, [raw]);
+
 
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
   const pageSafe = clamp(page, 1, totalPages);
@@ -268,6 +451,7 @@ export default function VendorList() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="rounded-xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 bg-gradient-to-r from-indigo-50 via-white to-green-50">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -283,13 +467,12 @@ export default function VendorList() {
               </div>
             </div>
 
-            {/* Right block */}
             <div className="flex flex-col gap-2">
-              {/* Buttons side-by-side, same overall width as search */}
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={load}
-                  className="inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold border border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Refresh
@@ -298,7 +481,8 @@ export default function VendorList() {
                 <button
                   onClick={onCreate}
                   disabled={creating}
-                  className="inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-semibold disabled:opacity-60 bg-indigo-600 text-white hover:bg-indigo-700"
+                  type="button"
+                  className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-60 bg-indigo-600 text-white hover:bg-indigo-700"
                 >
                   <Plus className="h-4 w-4" />
                   {creating ? "Creating..." : "New Agreement"}
@@ -311,7 +495,7 @@ export default function VendorList() {
         <div className="h-1 w-full bg-gradient-to-r from-indigo-600 via-blue-500 to-green-600" />
       </div>
 
-      {/* KPIs (look alike to incidents) */}
+      {/* KPI Cards (dashing) */}
       <div className="grid gap-3 md:grid-cols-4">
         <KpiCard
           title="TOTAL AGREEMENTS"
@@ -319,6 +503,10 @@ export default function VendorList() {
           hint="All vendor assessments"
           tone="indigo"
           icon={ClipboardList}
+          progress={kpis.completionRate}
+          progressLabel={`${kpis.completionRate}% completed`}
+          delta={deltas.total}
+          deltaLabel="last 30d"
         />
         <KpiCard
           title="IN PROGRESS"
@@ -326,6 +514,12 @@ export default function VendorList() {
           hint="Draft / in progress / submitted"
           tone="amber"
           icon={Activity}
+          progress={Math.round(
+            (kpis.inProgress / Math.max(1, kpis.total)) * 100,
+          )}
+          progressLabel={`${Math.round((kpis.inProgress / Math.max(1, kpis.total)) * 100)}% of total`}
+          delta={deltas.inProgress}
+          deltaLabel="last 30d"
         />
         <KpiCard
           title="COMPLETED"
@@ -333,6 +527,10 @@ export default function VendorList() {
           hint="Marked complete"
           tone="emerald"
           icon={ShieldCheck}
+          progress={kpis.completionRate}
+          progressLabel={`${kpis.completionRate}% completion`}
+          delta={deltas.completed}
+          deltaLabel="last 30d"
         />
         <KpiCard
           title="HIGH RISK"
@@ -340,6 +538,10 @@ export default function VendorList() {
           hint="Score indicates high risk"
           tone="rose"
           icon={ShieldAlert}
+          progress={kpis.riskRate}
+          progressLabel={`${kpis.riskRate}% risk rate`}
+          delta={deltas.highRisk}
+          deltaLabel="last 30d"
         />
       </div>
 
@@ -357,6 +559,7 @@ export default function VendorList() {
               />
               {q ? (
                 <button
+                  type="button"
                   onClick={() => setQ("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-1 text-slate-500 hover:bg-slate-100"
                   title="Clear"
@@ -393,6 +596,7 @@ export default function VendorList() {
 
             <button
               onClick={load}
+              type="button"
               className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 hover:bg-slate-50"
             >
               <RefreshCw className="h-4 w-4" />
@@ -435,7 +639,7 @@ export default function VendorList() {
                 <tr>
                   <td
                     className="px-5 py-8 text-sm font-semibold text-slate-500"
-                    colSpan={6}
+                    colSpan={8}
                   >
                     Loading...
                   </td>
@@ -445,6 +649,9 @@ export default function VendorList() {
                   const riskLevel =
                     x.riskLevel ||
                     (x.totalScore != null ? riskFromScore(x.totalScore) : "—");
+
+                  const prog = clamp(x.progress ?? 0, 0, 100);
+
                   return (
                     <tr
                       key={x.id}
@@ -473,17 +680,15 @@ export default function VendorList() {
                       </td>
 
                       <td className="px-5 py-4 text-sm font-semibold text-slate-700">
-                        {x.createdAt
-                          ? new Date(x.createdAt).toLocaleDateString()
-                          : "—"}
+                        {fmtDate(x.createdAt)}
                       </td>
 
                       <td className="px-5 py-4">
                         <span
-                          className={[
+                          className={cn(
                             "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1",
                             statusPill(x.status),
-                          ].join(" ")}
+                          )}
                         >
                           {x.status}
                         </span>
@@ -491,16 +696,14 @@ export default function VendorList() {
 
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100">
+                          <div className="h-2.5 w-32 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
                             <div
                               className="h-full rounded-full bg-indigo-600"
-                              style={{
-                                width: `${clamp(x.progress ?? 0, 0, 100)}%`,
-                              }}
+                              style={{ width: `${prog}%` }}
                             />
                           </div>
                           <div className="text-xs font-bold text-slate-700">
-                            {clamp(x.progress ?? 0, 0, 100)}%
+                            {prog}%
                           </div>
                         </div>
                       </td>
@@ -516,10 +719,10 @@ export default function VendorList() {
                           </span>
                         ) : (
                           <span
-                            className={[
+                            className={cn(
                               "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1",
                               riskPill(riskLevel),
-                            ].join(" ")}
+                            )}
                           >
                             {riskLevel}
                           </span>
@@ -529,6 +732,7 @@ export default function VendorList() {
                       <td className="px-5 py-4 text-right">
                         <button
                           onClick={() => nav(`/admin/vendor/${x.id}`)}
+                          type="button"
                           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-indigo-600 px-3 py-1 text-sm font-medium text-white hover:bg-indigo-700"
                         >
                           Open
@@ -540,7 +744,7 @@ export default function VendorList() {
                 })
               ) : (
                 <tr>
-                  <td className="px-5 py-10" colSpan={6}>
+                  <td className="px-5 py-10" colSpan={8}>
                     <div className="text-sm font-medium text-slate-900">
                       No agreements found
                     </div>
@@ -549,6 +753,7 @@ export default function VendorList() {
                     </div>
                     <button
                       onClick={onCreate}
+                      type="button"
                       className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700"
                     >
                       <Plus className="h-4 w-4" />

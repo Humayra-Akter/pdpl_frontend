@@ -7,7 +7,7 @@ import {
   updateUser,
   resetUserPassword,
   deactivateUser,
-  activateUser, 
+  activateUser,
 } from "../lib/admin";
 import { api } from "../lib/http";
 import { useNavigate } from "react-router-dom";
@@ -144,31 +144,31 @@ function KpiCard({
 }) {
   const tones = {
     sky: {
-      wrap: "border-sky-200 bg-sky-50/60 hover:bg-sky-50",
+      wrap: "border-sky-200 bg-sky-50/60 hover:bg-sky-50 bg-gradient-to-tl from-sky-50 to-sky-200/80 ring-indigo-200 hover:border-sky-300",
       pill: "bg-sky-100 text-sky-700 ring-sky-200",
       bar: "bg-sky-600",
       pct: "text-sky-700",
     },
     amber: {
-      wrap: "border-amber-200 bg-amber-50/60 hover:bg-amber-50",
+      wrap: "border-amber-200 bg-amber-50/60 hover:bg-amber-50 bg-gradient-to-tl from-amber-50 to-yellow-200/80 ring-amber-300 hover:border-amber-300",
       pill: "bg-amber-100 text-amber-700 ring-amber-200",
       bar: "bg-amber-600",
       pct: "text-amber-700",
     },
     indigo: {
-      wrap: "border-indigo-200 bg-indigo-50/60 hover:bg-indigo-50",
+      wrap: "border-indigo-200 bg-indigo-50/60 hover:bg-indigo-50 bg-gradient-to-tl from-indigo-50 to-indigo-200/80 ring-indigo-300 hover:border-indigo-300",
       pill: "bg-indigo-100 text-indigo-700 ring-indigo-200",
       bar: "bg-indigo-600",
       pct: "text-indigo-700",
     },
     rose: {
-      wrap: "border-rose-200 bg-rose-50/60 hover:bg-rose-50",
+      wrap: "border-rose-200 bg-rose-50/60 hover:bg-rose-50 bg-gradient-to-tl from-rose-50 to-rose-200/80 ring-rose-300 hover:border-rose-300",
       pill: "bg-rose-100 text-rose-700 ring-rose-200",
       bar: "bg-rose-600",
       pct: "text-rose-700",
     },
     emerald: {
-      wrap: "border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50",
+      wrap: "border-emerald-200 bg-emerald-50/60 hover:bg-emerald-50 bg-gradient-to-tl from-emerald-50 to-emerald-200/80 ring-emerald-300 hover:border-emerald-300",
       pill: "bg-emerald-100 text-emerald-700 ring-emerald-200",
       bar: "bg-emerald-600",
       pct: "text-emerald-700",
@@ -184,8 +184,8 @@ function KpiCard({
       onClick={onClick}
       disabled={!onClick}
       className={cn(
-        "w-full rounded-xl border p-4 text-left shadow-sm transition-all",
-        "hover:shadow-md hover:-translate-y-[1px]",
+        "w-full rounded-xl border p-4 text-left shadow-md transition-all",
+        "hover:shadow-lg hover:-translate-y-[1px]",
         "focus:outline-none focus:ring-4 focus:ring-indigo-100",
         onClick ? "cursor-pointer" : "cursor-default",
         t.wrap,
@@ -958,7 +958,7 @@ export default function UserManagement() {
       //   status: "ACTIVE",
       //   customFields: u.customFields || {},
       // });
-      await activateUser(u.id); 
+      await activateUser(u.id);
       await load();
     } catch (e) {
       setErr(e?.error || e?.message || "Failed to activate user");

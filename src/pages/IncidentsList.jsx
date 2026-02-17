@@ -155,7 +155,6 @@ function Pagination({ page, totalPages, onPage }) {
     </div>
   );
 }
-
 function KpiCard({ title, value, hint, tone, icon: Icon, total = 0 }) {
   const n = Number(value ?? 0) || 0;
   const denom = Math.max(1, Number(total ?? 0) || 1);
@@ -163,49 +162,49 @@ function KpiCard({ title, value, hint, tone, icon: Icon, total = 0 }) {
 
   const tones = {
     blue: {
-      wrap: "bg-sky-50 ring-sky-200",
+      wrap:"bg-gradient-to-tl from-sky-50 to-sky-200/80 ring-indigo-200 hover:ring-sky-400",
       title: "text-sky-900",
       hint: "text-sky-900/70",
       value: "text-sky-950",
       iconWrap: "bg-sky-100 text-sky-700 ring-sky-200",
       bar: "bg-sky-600",
-      barTrack: "bg-sky-100",
+      barTrack: "bg-sky-200",
     },
     amber: {
-      wrap: "bg-amber-50 ring-amber-200",
+      wrap: "bg-gradient-to-tl from-amber-50 to-yellow-200/80 ring-amber-300 hover:ring-amber-400",
       title: "text-amber-900",
       hint: "text-amber-900/70",
       value: "text-amber-950",
       iconWrap: "bg-amber-100 text-amber-700 ring-amber-200",
       bar: "bg-amber-500",
-      barTrack: "bg-amber-100",
+      barTrack: "bg-amber-200",
     },
     indigo: {
-      wrap: "bg-indigo-50 ring-indigo-200",
+      wrap: "bg-gradient-to-tl from-indigo-50 to-indigo-200/80 ring-indigo-300 hover:ring-indigo-400",
       title: "text-indigo-900",
       hint: "text-indigo-900/70",
       value: "text-indigo-950",
       iconWrap: "bg-indigo-100 text-indigo-700 ring-indigo-200",
       bar: "bg-indigo-600",
-      barTrack: "bg-indigo-100",
+      barTrack: "bg-indigo-200",
     },
     red: {
-      wrap: "bg-rose-50 ring-rose-200",
+      wrap: "bg-gradient-to-tl from-rose-50 to-rose-200/80 ring-rose-300 hover:ring-rose-400",
       title: "text-rose-900",
       hint: "text-rose-900/70",
       value: "text-rose-950",
       iconWrap: "bg-rose-100 text-rose-700 ring-rose-200",
       bar: "bg-rose-600",
-      barTrack: "bg-rose-100",
+      barTrack: "bg-rose-200",
     },
     rose: {
-      wrap: "bg-pink-50 ring-pink-200",
+      wrap: "bg-gradient-to-tl from-pink-50 to-pink-200/80 ring-pink-300 hover:ring-pink-400",
       title: "text-pink-900",
       hint: "text-pink-900/70",
       value: "text-pink-950",
       iconWrap: "bg-pink-100 text-pink-700 ring-pink-200",
       bar: "bg-pink-600",
-      barTrack: "bg-pink-100",
+      barTrack: "bg-pink-200",
     },
   };
 
@@ -222,7 +221,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon, total = 0 }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className={["text-sm font-semibold", t.title].join(" ")}>
+          <div className={["text-sm font-bold", t.title].join(" ")}>
             {title}
           </div>
           <div className={["mt-0.5 text-xs font-medium", t.hint].join(" ")}>
@@ -259,6 +258,7 @@ function KpiCard({ title, value, hint, tone, icon: Icon, total = 0 }) {
     </div>
   );
 }
+
 
 function ConfirmDeleteModal({ open, onClose, onConfirm, busy, title }) {
   if (!open) return null;

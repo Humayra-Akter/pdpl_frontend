@@ -11,8 +11,15 @@ import {
   RotateCw,
   CheckCircle2,
   AlertTriangle,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { createRopa, listRopa, deleteRopa } from "../lib/admin";
+
+/* ------------------ tiny helpers ------------------ */
+function cn(...xs) {
+  return xs.filter(Boolean).join(" ");
+}
 
 function fmtDate(v) {
   try {
@@ -60,14 +67,14 @@ function clamp(n, a, b) {
   return Math.max(a, Math.min(b, x));
 }
 
-// ---------- Modern donut (no <style/>) ----------
+/* ------------------ KPI bits (match your final KPI vibe) ------------------ */
 function Donut({ percent = 0, tone = "indigo" }) {
   const p = Math.max(0, Math.min(100, Number(percent) || 0));
 
   const colors = {
     indigo: {
       ring: "#4f46e5", // indigo-600
-      track: "#c7d2fe", // indigo-200 (much stronger)
+      track: "#c7d2fe", // indigo-200
       glow: "rgba(79,70,229,0.35)",
     },
     amber: {
@@ -91,15 +98,10 @@ function Donut({ percent = 0, tone = "indigo" }) {
 
   return (
     <div className="relative h-16 w-16">
-      {/* Track */}
       <div
         className="absolute inset-0 rounded-full"
-        style={{
-          background: c.track,
-        }}
+        style={{ background: c.track }}
       />
-
-      {/* Progress ring */}
       <div
         className="absolute inset-0 rounded-full"
         style={{
@@ -107,11 +109,7 @@ function Donut({ percent = 0, tone = "indigo" }) {
           boxShadow: `0 0 10px ${c.glow}`,
         }}
       />
-
-      {/* Inner cutout (smaller than before) */}
       <div className="absolute inset-[12px] rounded-full bg-white ring-1 ring-slate-200" />
-
-      {/* Percentage */}
       <div className="absolute inset-0 grid place-items-center text-xs font-bold text-slate-800">
         {p}%
       </div>
@@ -119,96 +117,160 @@ function Donut({ percent = 0, tone = "indigo" }) {
   );
 }
 
-function toneTextClass(tone) {
-  const map = {
-    indigo: "text-indigo-900",
-    amber: "text-amber-900",
-    green: "text-green-900",
-    rose: "text-rose-900",
-  };
-  return map[tone] || "text-slate-900";
+function DeltaChip({ value, label = "30d", tone = "indigo" }) {
+  if (typeof value !== "number") return null;
+
+  const isPos = value > 0;
+  const isNeg = value < 0;
+
+  const base =
+    "inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-bold ring-1 shadow-sm transition";
+  const cls = isPos
+    ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
+    : isNeg
+      ? "bg-rose-50 text-rose-800 ring-rose-200"
+      : "bg-slate-50 text-slate-700 ring-slate-200";
+
+  const hoverTone =
+    tone === "rose"
+      ? "hover:ring-rose-200"
+      : tone === "amber"
+        ? "hover:ring-amber-200"
+        : tone === "green"
+          ? "hover:ring-green-200"
+          : "hover:ring-indigo-200";
+
+  const Icon = isPos ? TrendingUp : isNeg ? TrendingDown : null;
+
+  return (
+    <span
+      className={cn(base, cls, "bg-white/70 ring-black/5", hoverTone)}
+      title={`${label} change`}
+    >
+      {Icon ? <Icon className="h-3.5 w-3.5" /> : null}
+      {isPos ? "+" : ""}
+      {value}
+      <span className="font-semibold opacity-70">{label}</span>
+    </span>
+  );
 }
 
-function toneSubTextClass(tone) {
+function tonePack(tone) {
   const map = {
-    indigo: "text-indigo-900/80",
-    amber: "text-amber-900/80",
-    green: "text-green-900/80",
-    rose: "text-rose-900/80",
+    indigo: {
+      ring: "ring-indigo-200",
+      bg: "bg-indigo-50/60",
+      glow: "from-indigo-500/12 to-emerald-500/10",
+      title: "text-indigo-700",
+      subtitle: "text-indigo-900/75",
+      value: "text-indigo-700",
+      chip: "bg-indigo-100 text-indigo-900 ring-indigo-200",
+      iconStroke: "text-indigo-600",
+      hoverRing: "hover:ring-indigo-300",
+    },
+    amber: {
+      ring: "ring-amber-200",
+      bg: "bg-amber-50/60",
+      glow: "from-amber-500/12 to-indigo-500/10",
+      title: "text-amber-700",
+      subtitle: "text-amber-900/75",
+      value: "text-amber-700",
+      chip: "bg-amber-100 text-amber-900 ring-amber-200",
+      iconStroke: "text-amber-600",
+      hoverRing: "hover:ring-amber-300",
+    },
+    green: {
+      ring: "ring-green-200",
+      bg: "bg-green-50/60",
+      glow: "from-green-500/12 to-sky-500/10",
+      title: "text-green-700",
+      subtitle: "text-green-900/75",
+      value: "text-green-700",
+      chip: "bg-green-100 text-green-900 ring-green-200",
+      iconStroke: "text-green-600",
+      hoverRing: "hover:ring-green-300",
+    },
+    rose: {
+      ring: "ring-rose-200",
+      bg: "bg-rose-50/60",
+      glow: "from-rose-500/12 to-amber-500/10",
+      title: "text-rose-700",
+      subtitle: "text-rose-900/75",
+      value: "text-rose-700",
+      chip: "bg-rose-100 text-rose-900 ring-rose-200",
+      iconStroke: "text-rose-600",
+      hoverRing: "hover:ring-rose-300",
+    },
   };
-  return map[tone] || "text-slate-600";
+  return map[tone] || map.indigo;
 }
 
-function toneBgRingClass(tone) {
-  const map = {
-    indigo: "bg-indigo-100/50 ring-indigo-100 hover:ring-indigo-200",
-    amber: "bg-amber-100/50 ring-amber-100 hover:ring-amber-200",
-    green: "bg-green-100/50 ring-green-100 hover:ring-green-200",
-    rose: "bg-rose-100/50 ring-rose-100 hover:ring-rose-200",
-  };
-  return map[tone] || "bg-slate-50 ring-slate-200 hover:ring-slate-300";
-}
+function KpiBox({
+  title,
+  subtitle,
+  valueText,
+  percent,
+  tone = "indigo",
+  icon: Icon,
+  delta,
+  progressValue,
+}) {
+  const t = tonePack(tone);
 
-function toneIconBgClass(tone) {
-  const map = {
-    indigo: "text-indigo-700",
-    amber: "text-amber-700",
-    green: "text-green-700",
-    rose: "text-rose-700",
-  };
-  return map[tone] || "bg-slate-100 text-slate-700 ring-slate-200";
-}
-
-function SummaryCard({ title, subtitle, value, percent, tone, icon: Icon }) {
   return (
     <div
-      className={[
-        "rounded-xl px-5 py-3 ring-1 shadow-lg",
-        "transition hover:shadow-lg hover:-translate-y-[1px]",
-        "flex items-center justify-between gap-4",
-        toneBgRingClass(tone),
-      ].join(" ")}
+      className={cn(
+        "group relative overflow-hidden rounded-xl p-5 ring-1 shadow-md transition-all",
+        "hover:-translate-y-0.5 hover:shadow-lg",
+        t.ring,
+        t.hoverRing,
+        t.bg,
+      )}
     >
-      <div className="min-w-0">
-        <div
-          className={["text-lg font-semibold", toneTextClass(tone)].join(" ")}
-        >
-          {title}
-        </div>
-        <div className={["mt-1 text-sm", toneSubTextClass(tone)].join(" ")}>
-          {subtitle}
-        </div>
-        <div
-          className={["mt-6 text-3xl font-bold", toneTextClass(tone)].join(" ")}
-        >
-          {value}
-        </div>
-      </div>
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-0 bg-gradient-to-br",
+          t.glow,
+        )}
+      />
+      <div className="relative flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <div className={cn("text-md font-bold tracking-wide", t.title)}>
+              {title}
+            </div>
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ring-1",
+                t.chip,
+              )}
+            >
+              KPI
+            </span>
+          </div>
 
-      <div className="flex flex-col items-end gap-5">
-        <div
-          className={[
-            "grid h-5 w-5 place-items-center ",
-            toneIconBgClass(tone),
-          ].join(" ")}
-        >
-          <Icon className="h-5 w-5" />
+          <div className={cn("mt-1 text-sm", t.subtitle)}>{subtitle}</div>
+
+          <div className="mt-3 flex flex-wrap items-end gap-2">
+            <div className={cn("text-3xl font-bold", t.value)}>{valueText}</div>
+            <DeltaChip value={delta} label="30d" tone={tone} />
+          </div>
         </div>
-        <Donut percent={percent} tone={tone} />
+
+        <div className="flex flex-col items-end gap-4">
+          {Icon ? (
+            <div className="transition group-hover:scale-[1.03]">
+              <Icon className={cn("h-5 w-5", t.iconStroke)} />
+            </div>
+          ) : null}
+          <Donut percent={percent} tone={tone} />
+        </div>
       </div>
     </div>
   );
 }
 
-/**
- * SUMMARY LOGIC
- * - Overall Score: average progress (0..100)
- * - In Progress: status === IN_PROGRESS
- * - Completed: status === SUBMITTED or APPROVED
- * - Critical: status === REJECTED OR (not completed and progress < 40)
- *
- * If backend provides res.summary, we’ll use it.
- */
+/* ------------------ Summary logic (unchanged, but KPI UI upgraded) ------------------ */
 function SummaryCards({ items, totalCount, summary }) {
   const computed = useMemo(() => {
     const total = Math.max(0, Number(totalCount) || 0);
@@ -276,44 +338,101 @@ function SummaryCards({ items, totalCount, summary }) {
     };
   }, [items, totalCount, summary]);
 
+  // deltas derived from updatedAt (fallback createdAt)
+  const deltas = useMemo(() => {
+    const rows = Array.isArray(items) ? items : [];
+    const days = 30;
+
+    const now = new Date();
+    const curFrom = new Date(now);
+    curFrom.setDate(curFrom.getDate() - days);
+    const prevFrom = new Date(now);
+    prevFrom.setDate(prevFrom.getDate() - days * 2);
+
+    const pickTime = (x) => new Date(x.updatedAt || x.createdAt);
+    const inRange = (x, from, to) => {
+      const dt = pickTime(x);
+      return Number.isFinite(dt.getTime()) && dt >= from && dt <= to;
+    };
+
+    const delta = (pick) => {
+      const cur = rows.filter(
+        (x) => pick(x) && inRange(x, curFrom, now),
+      ).length;
+      const prev = rows.filter(
+        (x) => pick(x) && inRange(x, prevFrom, curFrom),
+      ).length;
+      return cur - prev;
+    };
+
+    const donePick = (x) => {
+      const s = (x?.status || "DRAFT").toUpperCase();
+      return s === "SUBMITTED" || s === "APPROVED";
+    };
+
+    return {
+      overall: delta(() => true),
+      inProgress: delta((x) => (x?.status || "DRAFT") === "IN_PROGRESS"),
+      completed: delta(donePick),
+      critical: delta((x) => {
+        const s = (x?.status || "DRAFT").toUpperCase();
+        const p = clamp(x?.progress ?? 0, 0, 100);
+        const done = donePick(x);
+        return s === "REJECTED" || (!done && p < 40);
+      }),
+    };
+  }, [items]);
+
   return (
     <div className="grid gap-4 lg:grid-cols-4">
-      <SummaryCard
+      <KpiBox
         title="Overall Score"
         subtitle="Compliance readiness"
-        value={`${computed.overallScore}%`}
+        valueText={`${computed.overallScore}%`}
         percent={computed.overallScore}
         tone="indigo"
         icon={ClipboardCheck}
+        delta={deltas.overall}
+        progressValue={computed.overallScore}
       />
-      <SummaryCard
+
+      <KpiBox
         title="In Progress"
         subtitle="Ongoing work items"
-        value={computed.inProgress}
+        valueText={computed.inProgress}
         percent={computed.pctInProgress}
         tone="amber"
         icon={RotateCw}
+        delta={deltas.inProgress}
+        progressValue={computed.pctInProgress}
       />
-      <SummaryCard
+
+      <KpiBox
         title="Completed"
         subtitle="Delivered / closed loop"
-        value={computed.completed}
+        valueText={computed.completed}
         percent={computed.pctCompleted}
         tone="green"
         icon={CheckCircle2}
+        delta={deltas.completed}
+        progressValue={computed.pctCompleted}
       />
-      <SummaryCard
+
+      <KpiBox
         title="Critical"
         subtitle="Prioritize these first"
-        value={computed.critical}
+        valueText={computed.critical}
         percent={computed.pctCritical}
         tone="rose"
         icon={AlertTriangle}
+        delta={deltas.critical}
+        progressValue={computed.pctCritical}
       />
     </div>
   );
 }
 
+/* ------------------ rest of your component (unchanged) ------------------ */
 function ProgressBar({ value = 0 }) {
   const v = Math.max(0, Math.min(100, Number(value) || 0));
   const tone =
@@ -333,7 +452,7 @@ function ProgressBar({ value = 0 }) {
       </div>
       <div className="mt-1 h-2 w-full rounded-full bg-slate-100">
         <div
-          className={["h-2 rounded-full", tone].join(" ")}
+          className={cn("h-2 rounded-full", tone)}
           style={{ width: `${v}%` }}
         />
       </div>
@@ -403,9 +522,7 @@ function Pagination({ page, totalPages, onPage }) {
       <button
         onClick={() => onPage(Math.max(1, page - 1))}
         disabled={page === 1}
-        className={[btnBase, btnIdle, "px-3 gap-1 disabled:opacity-50"].join(
-          " ",
-        )}
+        className={cn(btnBase, btnIdle, "px-3 gap-1 disabled:opacity-50")}
       >
         <ChevronLeft className="h-4 w-4" />
         Prev
@@ -420,7 +537,7 @@ function Pagination({ page, totalPages, onPage }) {
           <button
             key={p}
             onClick={() => onPage(p)}
-            className={[btnBase, p === page ? btnActive : btnIdle].join(" ")}
+            className={cn(btnBase, p === page ? btnActive : btnIdle)}
           >
             {p}
           </button>
@@ -430,9 +547,7 @@ function Pagination({ page, totalPages, onPage }) {
       <button
         onClick={() => onPage(Math.min(totalPages, page + 1))}
         disabled={page === totalPages}
-        className={[btnBase, btnIdle, "px-3 gap-1 disabled:opacity-50"].join(
-          " ",
-        )}
+        className={cn(btnBase, btnIdle, "px-3 gap-1 disabled:opacity-50")}
       >
         Next
         <ChevronRight className="h-4 w-4" />
@@ -504,7 +619,6 @@ export default function RopaList() {
     setErr("");
     try {
       await deleteRopa(id);
-      // reload current page (or move back if page becomes empty)
       load(page, q);
     } catch (e) {
       setErr(e?.message || "Failed to delete RoPA");
@@ -569,7 +683,6 @@ export default function RopaList() {
     }
   }
 
-  // layout: Search full width, and 2 buttons side-by-side below it, matching width
   const rightBlockWidth = "w-[420px] max-w-full";
   const actionBtn =
     "inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition shadow-sm";
@@ -597,15 +710,14 @@ export default function RopaList() {
             </div>
 
             {/* Right block */}
-            <div className={["flex flex-col gap-2", rightBlockWidth].join(" ")}>
-              {/* Buttons side-by-side, same overall width as search */}
+            <div className={cn("flex flex-col gap-2", rightBlockWidth)}>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => load(page, q)}
-                  className={[
+                  className={cn(
                     actionBtn,
                     "border border-slate-200 bg-white text-slate-800 hover:bg-slate-50",
-                  ].join(" ")}
+                  )}
                 >
                   <RefreshCw className="h-4 w-4" />
                   Refresh
@@ -613,27 +725,26 @@ export default function RopaList() {
 
                 <button
                   onClick={openCreateModal}
-                  className={[
+                  className={cn(
                     actionBtn,
                     "bg-indigo-600 text-white hover:bg-indigo-700",
-                  ].join(" ")}
+                  )}
                 >
                   <Plus className="h-4 w-4" />
                   Create RoPA
                 </button>
               </div>
 
-              {/* Search (full width) */}
               <div className="w-full">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-800" />
                   <input
-                    className={[
+                    className={cn(
                       "w-full rounded-xl ring ring-slate-200 bg-white",
                       "pl-9 pr-10 py-2.5 text-sm font-medium outline-none",
                       "focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100",
                       "shadow-sm",
-                    ].join(" ")}
+                    )}
                     placeholder="Search RoPA by title..."
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
@@ -714,7 +825,6 @@ export default function RopaList() {
             </div>
           </div>
 
-          {/* Legend moved to bottom */}
           <div className="mt-5 flex flex-wrap items-center gap-2 rounded-xl ">
             <span className="text-xs font-semibold text-slate-700">
               Legend:
@@ -728,9 +838,7 @@ export default function RopaList() {
                     className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 bg-white ring-slate-200"
                     title={m.label}
                   >
-                    <span
-                      className={["h-2 w-2 rounded-full", m.dot].join(" ")}
-                    />
+                    <span className={cn("h-2 w-2 rounded-full", m.dot)} />
                     <span className="text-slate-700">{m.label}</span>
                   </span>
                 );
@@ -748,7 +856,7 @@ export default function RopaList() {
         <div className="h-1 w-full bg-gradient-to-r from-indigo-600 via-blue-500 to-green-600" />
       </div>
 
-      {/* Summary Cards (more modern + colored text per tone) */}
+      {/* ✅ KPI cards upgraded here */}
       <SummaryCards
         items={usingServerPaging ? items : locallyFiltered}
         totalCount={effectiveTotal}
@@ -784,7 +892,6 @@ export default function RopaList() {
               </tr>
             </thead>
 
-            {/* ✅ stronger zebra + hover to make odd/even obvious */}
             <tbody className="divide-y divide-slate-200">
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
@@ -835,10 +942,7 @@ export default function RopaList() {
                   const hover = "hover:bg-indigo-50/70";
 
                   return (
-                    <tr
-                      key={x.id}
-                      className={[zebra, hover, "transition"].join(" ")}
-                    >
+                    <tr key={x.id} className={cn(zebra, hover, "transition")}>
                       <td className="px-5 py-4 font-semibold text-slate-700 text-center">
                         {serial}
                       </td>
@@ -852,10 +956,10 @@ export default function RopaList() {
 
                       <td className="px-5 py-4 text-center">
                         <span
-                          className={[
+                          className={cn(
                             "inline-flex w-28 justify-center items-center rounded-full px-3 py-1 text-xs font-semibold ring-1",
                             m.pill,
-                          ].join(" ")}
+                          )}
                         >
                           {status}
                         </span>
@@ -877,20 +981,20 @@ export default function RopaList() {
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => nav(`/admin/ropa/${x.id}`)}
-                            className={[
+                            className={cn(
                               "inline-flex w-16 items-center justify-center rounded-xl px-2 py-1 text-xs font-semibold text-white",
                               "bg-indigo-600 hover:bg-indigo-700 shadow-sm transition",
-                            ].join(" ")}
+                            )}
                           >
                             Open →
                           </button>
 
                           <button
                             onClick={() => onDelete(x.id, x.title)}
-                            className={[
+                            className={cn(
                               "inline-flex items-center justify-center rounded-xl px-2 py-1 text-xs font-semibold",
                               "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition",
-                            ].join(" ")}
+                            )}
                             title="Delete"
                           >
                             Delete
@@ -905,7 +1009,6 @@ export default function RopaList() {
           </table>
         </div>
 
-        {/* pagination footer */}
         <div className="border-t border-slate-200 bg-white px-5 py-4">
           <Pagination
             page={page}
@@ -948,7 +1051,6 @@ export default function RopaList() {
             />
           </div>
 
-          {/* extra fields (UI only) */}
           <div className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
               <div className="text-sm font-semibold text-slate-900">

@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, RefreshCw, Search, Trash2 } from "lucide-react";
+import {
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  FolderOpen,
+  Flame,
+  Eye,
+  Siren,
+} from "lucide-react";
 import { createDpia, listDpia, deleteDpia } from "../lib/admin";
 
 function fmtDate(v) {
@@ -26,6 +35,12 @@ function statusPillClass(status = "DRAFT") {
   return map[status] || map.DRAFT;
 }
 
+function clamp(n, a, b) {
+  const x = Number(n);
+  if (Number.isNaN(x)) return a;
+  return Math.max(a, Math.min(b, x));
+}
+
 function ProgressBar({ value = 0 }) {
   const v = Math.max(0, Math.min(100, Number(value) || 0));
   const tone =
@@ -47,6 +62,119 @@ function ProgressBar({ value = 0 }) {
         <div
           className={["h-2 rounded-full", tone].join(" ")}
           style={{ width: `${v}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** ---- KPI (added) ---- */
+function KpiCard({ title, value, hint, tone, icon: Icon, total = 0 }) {
+  const n = Number(value ?? 0) || 0;
+  const denom = Math.max(1, Number(total ?? 0) || 1);
+  const pct = Math.round((n / denom) * 100);
+
+  const tones = {
+    blue: {
+      wrap: "bg-gradient-to-br from-sky-50 to-sky-100 ring-sky-200",
+      title: "text-sky-900",
+      hint: "text-sky-900/70",
+      value: "text-sky-950",
+      iconWrap: "bg-sky-100 text-sky-700 ring-sky-200",
+      bar: "bg-sky-600",
+      barTrack: "bg-sky-200",
+    },
+    amber: {
+      wrap: "bg-gradient-to-br from-amber-50 to-amber-100 ring-amber-200",
+      title: "text-amber-900",
+      hint: "text-amber-900/70",
+      value: "text-amber-950",
+      iconWrap: "bg-amber-100 text-amber-700 ring-amber-200",
+      bar: "bg-amber-600",
+      barTrack: "bg-amber-200",
+    },
+    indigo: {
+      wrap: "bg-gradient-to-br from-indigo-50 to-indigo-100 ring-indigo-200",
+      title: "text-indigo-900",
+      hint: "text-indigo-900/70",
+      value: "text-indigo-950",
+      iconWrap: "bg-indigo-100 text-indigo-700 ring-indigo-200",
+      bar: "bg-indigo-600",
+      barTrack: "bg-indigo-200",
+    },
+    orange: {
+      wrap: "bg-gradient-to-br from-orange-50 to-orange-100 ring-orange-200",
+      title: "text-orange-900",
+      hint: "text-orange-900/70",
+      value: "text-orange-950",
+      iconWrap: "bg-orange-100 text-orange-700 ring-orange-200",
+      bar: "bg-orange-600",
+      barTrack: "bg-orange-200",
+    },
+    rose: {
+      wrap: "bg-gradient-to-br from-rose-50 to-rose-100 ring-rose-200",
+      title: "text-rose-900",
+      hint: "text-rose-900/70",
+      value: "text-rose-950",
+      iconWrap: "bg-rose-100 text-rose-700 ring-rose-200",
+      bar: "bg-rose-600",
+      barTrack: "bg-rose-200",
+    },
+    emerald: {
+      wrap: "bg-gradient-to-br from-emerald-50 to-emerald-100 ring-emerald-200",
+      title: "text-emerald-900",
+      hint: "text-emerald-900/70",
+      value: "text-emerald-950",
+      iconWrap: "bg-emerald-100 text-emerald-700 ring-emerald-200",
+      bar: "bg-emerald-600",
+      barTrack: "bg-emerald-200",
+    },
+  };
+
+  const t = tones[tone] || tones.blue;
+
+  return (
+    <div
+      className={[
+        "rounded-xl ring-1 shadow-sm",
+        "px-4 py-3",
+        "transition hover:shadow-md hover:-translate-y-[1px]",
+        t.wrap,
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className={["text-sm font-semibold", t.title].join(" ")}>
+            {title}
+          </div>
+          <div className={["mt-0.5 text-xs font-medium", t.hint].join(" ")}>
+            {hint}
+          </div>
+        </div>
+
+        <div
+          className={[
+            "grid h-9 w-9 place-items-center rounded-xl ring-1",
+            t.iconWrap,
+          ].join(" ")}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-end justify-between">
+        <div className={["text-3xl font-bold leading-none", t.value].join(" ")}>
+          {value ?? "—"}
+        </div>
+        <div className={["text-xs font-bold tabular-nums", t.hint].join(" ")}>
+          {pct}% of total
+        </div>
+      </div>
+
+      <div className={["mt-3 h-2 rounded-full", t.barTrack].join(" ")}>
+        <div
+          className={["h-2 rounded-full", t.bar].join(" ")}
+          style={{ width: `${clamp(pct, 0, 100)}%` }}
         />
       </div>
     </div>
@@ -114,13 +242,39 @@ export default function DpiaList() {
     try {
       setErr("");
       await deleteDpia(item.id);
-
-      // remove from UI instantly
       setItems((prev) => prev.filter((x) => x.id !== item.id));
     } catch (e) {
       setErr(e?.message || "Delete failed");
     }
   }
+
+  /** KPI computation (from the currently loaded list) */
+  const kpis = useMemo(() => {
+    const rows = Array.isArray(items) ? items : [];
+    const total = rows.length;
+
+    const open = rows.filter(
+      (x) => String(x.status || "DRAFT").toUpperCase() !== "COMPLETED",
+    ).length;
+
+    const inReview = rows.filter((x) =>
+      ["IN_REVIEW", "SUBMITTED"].includes(String(x.status || "").toUpperCase()),
+    ).length;
+
+    const needInfo = rows.filter(
+      (x) => String(x.status || "").toUpperCase() === "NEED_INFO",
+    ).length;
+
+    const rejected = rows.filter(
+      (x) => String(x.status || "").toUpperCase() === "REJECTED",
+    ).length;
+
+    const completed = rows.filter((x) =>
+      ["COMPLETED", "APPROVED"].includes(String(x.status || "").toUpperCase()),
+    ).length;
+
+    return { total, open, inReview, needInfo, rejected, completed };
+  }, [items]);
 
   return (
     <div className="space-y-5">
@@ -197,6 +351,58 @@ export default function DpiaList() {
         </div>
 
         <div className="h-1 w-full bg-gradient-to-r from-indigo-600 via-blue-500 to-emerald-600" />
+      </div>
+
+      {/* ✅ KPI Part (added before table) */}
+      <div className="grid gap-3 lg:grid-cols-6">
+        <KpiCard
+          title="Total"
+          hint="All DPIAs"
+          value={kpis.total}
+          tone="indigo"
+          icon={FolderOpen}
+          total={kpis.total}
+        />
+        <KpiCard
+          title="Open"
+          hint="Not completed"
+          value={kpis.open}
+          tone="amber"
+          icon={Flame}
+          total={kpis.total}
+        />
+        <KpiCard
+          title="In Review"
+          hint="Review/submitted"
+          value={kpis.inReview}
+          tone="blue"
+          icon={Eye}
+          total={kpis.total}
+        />
+        <KpiCard
+          title="Need Info"
+          hint="Blocked items"
+          value={kpis.needInfo}
+          tone="orange"
+          icon={Siren}
+          total={kpis.total}
+        />
+        <KpiCard
+          title="Rejected"
+          hint="Action required"
+          value={kpis.rejected}
+          tone="rose"
+          icon={Trash2}
+          total={kpis.total}
+        />
+        <KpiCard
+          title="Completed"
+          hint="Approved/closed"
+          value={kpis.completed}
+          tone="emerald"
+          icon={Plus}
+          total={kpis.total}
+        />
       </div>
 
       {/* Table */}
@@ -296,7 +502,6 @@ export default function DpiaList() {
 
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          {/* Delete is intentionally disabled until backend supports it */}
                           <button
                             onClick={() => onDelete(x)}
                             className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
@@ -320,7 +525,6 @@ export default function DpiaList() {
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
   );
