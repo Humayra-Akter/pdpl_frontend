@@ -17,6 +17,12 @@ import VendorWizard from "./pages/VendorWizard";
 import TrainingAdmin from "./pages/TrainingAdmin";
 import UserManagement from "./pages/UserManagement";
 import UserAnalytics from "./pages/UserAnalytics";
+import UserLayout from "./layouts/UserLayout";
+import UserDashboard from "./pages/user/UserDashboard";
+import UserCaseDetail from "./pages/user/UserCaseDetail";
+import UserTraining from "./pages/user/UserTraining";
+import UserProfile from "./pages/user/UserProfile";
+import UserCasesList from "./pages/user/UserCasesList";
 
 export default function App() {
   return (
@@ -48,7 +54,7 @@ export default function App() {
           {/* training dynamic routes */}
           <Route path="/admin/training" element={<TrainingAdmin />} />
 
-          {/* Users */}
+          {/* User management at admin end */}
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/users/analytics" element={<UserAnalytics />} />
         </Route>
@@ -58,8 +64,15 @@ export default function App() {
         <Route path="/dpo" element={<Dpo />} />
       </Route>
 
+      {/* USER PORTAL (strict) */}
       <Route element={<RequireAuth roles={["USER"]} />}>
-        <Route path="/user" element={<User />} />
+        <Route path="/user" element={<UserLayout />}>
+          <Route index element={<UserDashboard />} />
+          <Route path="cases" element={<UserCasesList />} />
+          <Route path="cases/:id" element={<UserCaseDetail />} />
+          <Route path="training" element={<UserTraining />} />
+          <Route path="profile" element={<UserProfile />} />
+        </Route>
       </Route>
 
       {/* fallback */}
