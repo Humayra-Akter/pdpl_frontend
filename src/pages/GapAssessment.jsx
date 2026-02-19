@@ -188,7 +188,7 @@ function Ring({ value = 0, tone = "indigo" }) {
         x="44"
         y="48"
         textAnchor="middle"
-        className={cn("font-extrabold", t.text)}
+        className={cn("font-bold", t.text)}
         fontSize="16"
       >
         {v}%
@@ -210,7 +210,7 @@ function DeltaChip({ value, label = "30d", tone = "indigo" }) {
   const same = "bg-slate-50 text-slate-700 ring-slate-200";
 
   const base =
-    "inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-extrabold ring-1 shadow-sm";
+    "inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-bold ring-1 shadow-sm";
   const cls = isPos ? good : isNeg ? bad : same;
 
   const Icon = isPos ? TrendingUp : isNeg ? TrendingDown : null;
@@ -353,7 +353,7 @@ function BetterKpiTile({
             </div>
             <span
               className={cn(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-extrabold ring-1",
+                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ring-1",
                 t.chip,
               )}
             >
@@ -404,7 +404,7 @@ function CreateModal({ open, onClose, onCreate }) {
       <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="text-xl font-extrabold text-slate-900">
+            <div className="text-xl font-bold text-slate-900">
               New Gap Assessment
             </div>
             <div className="mt-1 text-sm font-medium text-slate-600">

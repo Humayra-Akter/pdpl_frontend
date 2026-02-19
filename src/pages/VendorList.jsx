@@ -146,7 +146,7 @@ function ProgressBar({ value = 0, tone = "indigo", labelRight }) {
     <div className="mt-3">
       <div className="flex items-center justify-between">
         <div className="text-[11px] font-semibold text-slate-600">Progress</div>
-        <div className="text-[11px] font-extrabold text-slate-800">
+        <div className="text-[11px] font-bold text-slate-800">
           {labelRight ?? `${pct}%`}
         </div>
       </div>
@@ -223,19 +223,17 @@ function KpiCard({
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] font-extrabold tracking-wide text-slate-600">
+          <div className="text-[11px] font-bold tracking-wide text-slate-600">
             {title}
           </div>
 
           <div className="mt-1 flex flex-wrap items-end gap-2">
-            <div className="text-3xl font-extrabold text-slate-950">
-              {value}
-            </div>
+            <div className="text-3xl font-bold text-slate-950">{value}</div>
 
             {typeof delta === "number" ? (
               <span
                 className={cn(
-                  "mb-1 inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-extrabold ring-1",
+                  "mb-1 inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-bold ring-1",
                   deltaCls,
                 )}
                 title={deltaLabel}

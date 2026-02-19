@@ -100,10 +100,7 @@ export function PastelKpiTile({
         <div className="min-w-0">
           <div className="text-xs font-semibold text-slate-600">{title}</div>
           <div
-            className={cx(
-              "mt-2 text-3xl font-extrabold tracking-tight",
-              t.accent,
-            )}
+            className={cx("mt-2 text-3xl font-bold tracking-tight", t.accent)}
           >
             {big}
           </div>

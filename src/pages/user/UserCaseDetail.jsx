@@ -14,6 +14,10 @@ import {
   Upload,
   Info,
   Tag,
+  Trash2,
+  X,
+  CheckCircle2,
+  ShieldAlert,
 } from "lucide-react";
 import {
   getMyCase,
@@ -21,6 +25,7 @@ import {
   addCaseComment,
   listCaseAttachments,
   uploadCaseAttachments,
+  deleteCaseAttachment,
 } from "../../lib/user";
 
 function cn(...xs) {
@@ -31,7 +36,7 @@ function SoftCard({ className = "", children }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_0_rgba(15,23,42,0.03)]",
+        "rounded-xl border border-slate-200/80 bg-white shadow-[0_1px_0_rgba(15,23,42,0.05)]",
         className,
       )}
     >
@@ -42,13 +47,13 @@ function SoftCard({ className = "", children }) {
 
 function EndpointMissing({ label }) {
   return (
-    <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm">
+    <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
       <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-700" />
       <div>
         <div className="font-semibold text-slate-900">
           {label} not connected
         </div>
-        <div className="mt-0.5 text-xs text-slate-600">
+        <div className="mt-0.5 text-xs text-slate-700/80">
           Endpoint missing — showing placeholder UI.
         </div>
       </div>
@@ -68,6 +73,22 @@ function Pill({ children, className = "", icon: Icon }) {
       {children}
     </span>
   );
+}
+
+function fmtDateTime(v) {
+  if (!v) return "—";
+  const d = new Date(v);
+  if (!Number.isFinite(d.getTime())) return "—";
+  return d.toLocaleString();
+}
+
+function formatBytes(n) {
+  const num = Number(n || 0);
+  if (!Number.isFinite(num) || num <= 0) return "";
+  const kb = num / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
 }
 
 function statusPill(status) {
@@ -95,64 +116,64 @@ function typePill(type) {
   return "border-slate-200 bg-slate-50 text-slate-700";
 }
 
-function fmtDateTime(v) {
-  if (!v) return "—";
-  const d = new Date(v);
-  if (!Number.isFinite(d.getTime())) return "—";
-  return d.toLocaleString();
-}
-
-function formatBytes(n) {
-  const num = Number(n || 0);
-  if (!Number.isFinite(num) || num <= 0) return "";
-  const kb = num / 1024;
-  if (kb < 1024) return `${Math.round(kb)} KB`;
-  const mb = kb / 1024;
-  return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
+function SectionHeader({ icon: Icon, title, subtitle, right }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-2.5">
+        {Icon ? (
+          <div className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-slate-50">
+            <Icon className="h-5 w-5 text-indigo-700" />
+          </div>
+        ) : null}
+        <div className="min-w-0">
+          <div className="text-lg font-semibold text-indigo-700">{title}</div>
+          {subtitle ? (
+            <div className="mt-0.5 text-sm text-slate-600">{subtitle}</div>
+          ) : null}
+        </div>
+      </div>
+      {right}
+    </div>
+  );
 }
 
 function StatTile({ label, value, icon: Icon, tone = "slate" }) {
   const toneMap = {
-    slate: "border-slate-200 bg-slate-50 text-slate-900",
-    indigo: "border-indigo-200 bg-indigo-50 text-indigo-900",
-    emerald: "border-emerald-200 bg-emerald-50 text-emerald-900",
-    amber: "border-amber-200 bg-amber-50 text-amber-900",
-    rose: "border-rose-200 bg-rose-50 text-rose-900",
-    sky: "border-sky-200 bg-sky-50 text-sky-900",
+    slate: "border-slate-200 bg-slate-50",
+    indigo: "border-indigo-200 bg-indigo-50",
+    emerald: "border-emerald-200 bg-emerald-50",
+    amber: "border-amber-200 bg-amber-50",
+    rose: "border-rose-200 bg-rose-50",
+    sky: "border-sky-200 bg-sky-50",
   };
   const cls = toneMap[tone] || toneMap.slate;
 
   return (
-    <div className={cn("rounded-2xl border p-4", cls)}>
+    <div className={cn("rounded-xl border p-4", cls)}>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
             {label}
           </div>
-          <div className="mt-1 truncate text-lg font-semibold">{value}</div>
+          <div className="mt-1 truncate text-lg font-semibold text-slate-900">
+            {value}
+          </div>
         </div>
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/70 border border-white/40">
-          <Icon className="h-5 w-5 opacity-80" />
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/70 border border-white/40">
+          <Icon className="h-5 w-5 text-slate-700" />
         </div>
       </div>
     </div>
   );
 }
 
-function SectionHeader({ icon: Icon, title, right }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        {Icon ? (
-          <div className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-slate-50">
-            <Icon className="h-4 w-4 text-slate-700" />
-          </div>
-        ) : null}
-        <div className="text-base font-semibold text-slate-900">{title}</div>
-      </div>
-      {right}
-    </div>
-  );
+function fileIconByName(name = "") {
+  const ext = String(name).split(".").pop()?.toLowerCase();
+  if (["png", "jpg", "jpeg", "webp", "gif"].includes(ext)) return "image";
+  if (["pdf"].includes(ext)) return "pdf";
+  if (["doc", "docx"].includes(ext)) return "doc";
+  if (["xls", "xlsx", "csv"].includes(ext)) return "sheet";
+  return "file";
 }
 
 export default function UserCaseDetail() {
@@ -177,6 +198,8 @@ export default function UserCaseDetail() {
   const [uploading, setUploading] = useState(false);
   const [uploadErr, setUploadErr] = useState("");
 
+  const [deletingId, setDeletingId] = useState("");
+  const [confirmRemove, setConfirmRemove] = useState(null); // attachment object
   const fileInputRef = useRef(null);
 
   async function load() {
@@ -213,17 +236,10 @@ export default function UserCaseDetail() {
     setUploading(true);
 
     const res = await uploadCaseAttachments(id, files, "USER_ATTACHMENT");
-
     setUploading(false);
 
-    if (res.missing) {
-      setUploadErr("Upload endpoint missing.");
-      return;
-    }
-    if (!res.ok) {
-      setUploadErr(res.error?.message || "Upload failed");
-      return;
-    }
+    if (res.missing) return setUploadErr("Upload endpoint missing.");
+    if (!res.ok) return setUploadErr(res.error?.message || "Upload failed");
 
     const a = await listCaseAttachments(id);
     setAttMissing(!!a.missing);
@@ -244,6 +260,30 @@ export default function UserCaseDetail() {
     setComments(c.ok ? c.data?.items || c.data || [] : []);
   }
 
+  async function refreshAttachments() {
+    setAttLoading(true);
+    const a = await listCaseAttachments(id);
+    setAttMissing(!!a.missing);
+    setAttachments(a.ok ? a.data?.items || a.data || [] : []);
+    setAttLoading(false);
+  }
+
+  async function removeAttachment(linkId) {
+    const yes = window.confirm("Remove this attachment?");
+    if (!yes) return;
+
+    setDeletingId(String(linkId));
+    const res = await deleteCaseAttachment(id, linkId);
+    setDeletingId("");
+
+    if (!res.ok) {
+      setUploadErr(res.error?.message || "Failed to remove attachment");
+      return;
+    }
+
+    await refreshAttachments();
+  }
+
   const title = item?.title || "Request detail";
   const status = item?.status || "—";
   const type = item?.type || "—";
@@ -255,192 +295,220 @@ export default function UserCaseDetail() {
 
   const derived = useMemo(() => {
     const countComments = Array.isArray(comments) ? comments.length : 0;
-
     const files = Array.isArray(attachments) ? attachments : [];
+
     const totalBytes = files.reduce((acc, a) => {
       const f = a.file || a;
       const n = Number(f.sizeBytes || f.size || 0);
       return acc + (Number.isFinite(n) ? n : 0);
     }, 0);
 
-    const attentionHint = (() => {
-      const s = String(status || "").toUpperCase();
-      if (s === "NEED_INFO")
-        return {
-          tone: "amber",
-          title: "Action needed",
-          desc: "This request needs more information. Add details in comments to unblock review.",
-        };
-      if (["IN_REVIEW", "REVIEW"].includes(s))
-        return {
-          tone: "sky",
-          title: "In review",
-          desc: "The team is reviewing your request. You can still add context if needed.",
-        };
-      if (["SUBMITTED", "OPEN", "IN_PROGRESS", "PENDING"].includes(s))
-        return {
-          tone: "indigo",
-          title: "Tracking",
-          desc: "Your request is in progress. Add a deadline/impact if it’s time-sensitive.",
-        };
-      if (["CLOSED", "COMPLETED", "RESOLVED", "DONE"].includes(s))
-        return {
-          tone: "emerald",
-          title: "Completed",
-          desc: "This request is closed. You can download any attachments and keep notes for your records.",
-        };
-      return {
-        tone: "slate",
-        title: "Request details",
-        desc: "Review the description, track updates, and keep all supporting files here.",
-      };
-    })();
+    const s = String(status || "").toUpperCase();
+    const nextAction =
+      s === "NEED_INFO"
+        ? {
+            tone: "amber",
+            text: "Add missing details in comments (recommended).",
+          }
+        : ["IN_REVIEW", "REVIEW"].includes(s)
+          ? {
+              tone: "sky",
+              text: "Waiting for review — add extra context only if needed.",
+            }
+          : ["SUBMITTED", "OPEN", "IN_PROGRESS", "PENDING"].includes(s)
+            ? {
+                tone: "indigo",
+                text: "Track updates — add deadline/impact if urgent.",
+              }
+            : ["CLOSED", "COMPLETED", "RESOLVED", "DONE"].includes(s)
+              ? {
+                  tone: "emerald",
+                  text: "Completed — download evidence for records.",
+                }
+              : {
+                  tone: "slate",
+                  text: "Review details and keep everything in one place.",
+                };
+
+    const focusBanner =
+      s === "NEED_INFO"
+        ? {
+            tone: "amber",
+            icon: AlertTriangle,
+            title: "Action needed",
+            desc: "This request is blocked because the privacy team needs more information. Add missing details below.",
+          }
+        : ["IN_REVIEW", "REVIEW"].includes(s)
+          ? {
+              tone: "sky",
+              icon: Info,
+              title: "In review",
+              desc: "The privacy team is reviewing your request. You can still upload supporting evidence if necessary.",
+            }
+          : s === "INCIDENT"
+            ? {
+                tone: "rose",
+                icon: ShieldAlert,
+                title: "Incident tracking",
+                desc: "If this is urgent, add timeline + impact + affected systems in a comment. Upload screenshots/logs.",
+              }
+            : {
+                tone: "indigo",
+                icon: CheckCircle2,
+                title: "Everything in one place",
+                desc: "Track progress, keep evidence, and communicate with the privacy team from this page.",
+              };
 
     return {
       countComments,
       filesCount: files.length,
       totalBytes,
-      attentionHint,
+      nextAction,
+      focusBanner,
     };
   }, [comments, attachments, status]);
 
-  const hintToneMap = {
-    slate: "border-slate-200 bg-slate-50 text-slate-900",
-    indigo: "border-indigo-200 bg-indigo-50 text-indigo-900",
-    sky: "border-sky-200 bg-sky-50 text-sky-900",
-    amber: "border-amber-200 bg-amber-50 text-amber-900",
-    emerald: "border-emerald-200 bg-emerald-50 text-emerald-900",
-    rose: "border-rose-200 bg-rose-50 text-rose-900",
-  };
-  const hintCls = hintToneMap[derived.attentionHint.tone] || hintToneMap.slate;
+  const bannerTone =
+    {
+      slate: "border-slate-200 bg-slate-50",
+      indigo: "border-indigo-200 bg-indigo-50",
+      sky: "border-sky-200 bg-sky-50",
+      amber: "border-amber-200 bg-amber-50",
+      emerald: "border-emerald-200 bg-emerald-50",
+      rose: "border-rose-200 bg-rose-50",
+    }[derived.focusBanner.tone] || "border-slate-200 bg-slate-50";
+
+  const BannerIcon = derived.focusBanner.icon || Info;
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <SoftCard className="overflow-hidden shadow-md bg-gradient-to-br from-indigo-300/40 to-white/60">
-        <div className="relative">
-          {/* subtle top accent */}
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
-          <div className="p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <button
-                  onClick={() => navigate("/user/cases")}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:shadow-sm"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </button>
+      {/* Top: page header with strong hierarchy */}
+      <SoftCard className="overflow-hidden">
+        {/* subtle accent strip (not tacky gradient blocks) */}
 
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="truncate text-xl capitalize font-semibold text-slate-900">
-                      {title}
-                    </div>
-
-                    <Pill
-                      icon={Tag}
-                      className={cn("capitalize", typePill(type))}
-                    >
-                      {type}
-                    </Pill>
-
-                    <Pill
-                      icon={Info}
-                      className={cn("capitalize", statusPill(status))}
-                    >
-                      {status}
-                    </Pill>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1">
-                      Request ID: <span className="font-semibold">{id}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1">
-                      <Clock className="h-3.5 w-3.5" />
-                      Created:{" "}
-                      <span className="font-semibold">
-                        {fmtDateTime(item?.createdAt)}
-                      </span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1">
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Updated:{" "}
-                      <span className="font-semibold">
-                        {fmtDateTime(item?.updatedAt)}
-                      </span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1">
-                      <User2 className="h-3.5 w-3.5" />
-                      Assigned:{" "}
-                      <span className="font-semibold">{assignedTo}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-
+        <div className="p-5 bg-blue-100/50 shadow-md border border-slate-200/80 rounded-xl">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-4 min-w-0">
               <button
-                onClick={load}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:shadow-sm"
+                onClick={() => navigate("/user/cases")}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
-                <RefreshCw className="h-4 w-4" />
-                Refresh
+                <ArrowLeft className="h-4 w-4" />
+                Back
               </button>
-            </div>
 
-            {/* focus banner */}
-            <div className={cn("mt-4 rounded-2xl border p-4", hintCls)}>
-              <div className="flex items-start gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-2xl border border-white/50 bg-white/60">
-                  <AlertTriangle className="h-5 w-5 opacity-80" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="truncate capitalize text-2xl font-semibold text-indigo-700">
+                    {title}
+                  </div>
+
+                  <Pill icon={Tag} className={cn("capitalize", typePill(type))}>
+                    {type}
+                  </Pill>
+                  <Pill
+                    icon={Info}
+                    className={cn("capitalize", statusPill(status))}
+                  >
+                    {status}
+                  </Pill>
                 </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold">
-                    {derived.attentionHint.title}
-                  </div>
-                  <div className="mt-0.5 text-sm text-slate-700/90">
-                    {derived.attentionHint.desc}
-                  </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1">
+                    Request ID: <span className="font-semibold">{id}</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    Created:{" "}
+                    <span className="font-semibold">
+                      {fmtDateTime(item?.createdAt)}
+                    </span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    Updated:{" "}
+                    <span className="font-semibold">
+                      {fmtDateTime(item?.updatedAt)}
+                    </span>
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1">
+                    <User2 className="h-3.5 w-3.5" />
+                    Assigned:{" "}
+                    <span className="font-semibold">{assignedTo}</span>
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* quick stats */}
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <StatTile
-                label="Comments"
-                value={derived.countComments}
-                icon={MessageSquare}
-                tone="indigo"
-              />
-              <StatTile
-                label="Attachments"
-                value={`${derived.filesCount}${
-                  derived.totalBytes
-                    ? ` • ${formatBytes(derived.totalBytes)}`
-                    : ""
-                }`}
-                icon={Paperclip}
-                tone="sky"
-              />
-              <StatTile
-                label="Owner / Assignee"
-                value={assignedTo}
-                icon={User2}
-                tone="emerald"
-              />
+            <button
+              onClick={load}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </button>
+          </div>
+
+          {/* Focus banner */}
+          <div className={cn("mt-4 rounded-xl border p-4", bannerTone)}>
+            <div className="flex items-start gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/50 bg-white/60">
+                <BannerIcon className="h-5 w-5 text-slate-800" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-slate-900">
+                  {derived.focusBanner.title}
+                </div>
+                <div className="mt-0.5 text-sm text-slate-700">
+                  {derived.focusBanner.desc}
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Stat tiles (now 4 tiles to increase clarity/focus) */}
+          <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <StatTile
+              label="Next action"
+              value={derived.nextAction.text}
+              icon={CheckCircle2}
+              tone={derived.nextAction.tone}
+            />
+            <StatTile
+              label="Comments"
+              value={commentsLoading ? "…" : derived.countComments}
+              icon={MessageSquare}
+              tone="indigo"
+            />
+            <StatTile
+              label="Attachments"
+              value={`${derived.filesCount}${derived.totalBytes ? ` • ${formatBytes(derived.totalBytes)}` : ""}`}
+              icon={Paperclip}
+              tone="sky"
+            />
+            <StatTile
+              label="Assigned to"
+              value={assignedTo}
+              icon={User2}
+              tone="emerald"
+            />
+          </div>
         </div>
+        <div className="h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
       </SoftCard>
 
       <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
         {/* LEFT */}
         <div className="space-y-5">
-          {/* Details */}
+          {/* Description */}
           <SoftCard className="p-5 shadow-md">
-            <SectionHeader icon={FileText} title="Description" />
+            <SectionHeader
+              icon={FileText}
+              title="Description"
+              subtitle="What you submitted (audit-friendly)."
+            />
+
             <div className="mt-4">
               {missing ? (
                 <EndpointMissing label="Case detail" />
@@ -453,21 +521,21 @@ export default function UserCaseDetail() {
               ) : !item ? (
                 <div className="text-sm text-slate-600">Not found.</div>
               ) : (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-800">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-800 whitespace-pre-wrap">
                   {item.description || "—"}
                 </div>
               )}
             </div>
 
             {/* Timeline */}
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="mt-5 rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900">
                     Timeline
                   </div>
                   <div className="mt-0.5 text-xs text-slate-500">
-                    Audit-friendly timestamps. (Events can be expanded later.)
+                    Created / updated timestamps. (Events can expand later.)
                   </div>
                 </div>
                 <Pill className="border-slate-200 bg-slate-50 text-slate-700">
@@ -476,7 +544,7 @@ export default function UserCaseDetail() {
               </div>
 
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                     Created
                   </div>
@@ -484,7 +552,7 @@ export default function UserCaseDetail() {
                     {fmtDateTime(item?.createdAt)}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                     Last updated
                   </div>
@@ -501,6 +569,7 @@ export default function UserCaseDetail() {
             <SectionHeader
               icon={MessageSquare}
               title="Comments"
+              subtitle="Ask/answer questions and add missing context."
               right={
                 <span className="text-sm font-semibold text-slate-600">
                   {commentsLoading ? "…" : `${comments.length} total`}
@@ -513,17 +582,17 @@ export default function UserCaseDetail() {
                 <EndpointMissing label="Comments" />
               ) : commentsLoading ? (
                 <div className="space-y-2">
-                  <div className="h-12 rounded-2xl bg-slate-100 animate-pulse" />
-                  <div className="h-12 w-2/3 rounded-2xl bg-slate-100 animate-pulse" />
+                  <div className="h-12 rounded-xl bg-slate-100 animate-pulse" />
+                  <div className="h-12 w-2/3 rounded-xl bg-slate-100 animate-pulse" />
                 </div>
               ) : comments.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                   <div className="font-semibold text-slate-900">
                     No comments yet
                   </div>
                   <div className="mt-1 text-sm text-slate-600">
-                    Add missing context (deadline, impact, affected systems) to
-                    speed up resolution.
+                    Add deadline + business impact + affected systems to speed
+                    up resolution.
                   </div>
                 </div>
               ) : (
@@ -531,19 +600,17 @@ export default function UserCaseDetail() {
                   {comments.map((c, idx) => (
                     <div
                       key={c.id || idx}
-                      className="rounded-2xl border border-slate-200 bg-white p-4"
+                      className="rounded-xl border border-slate-200 bg-white p-4"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <div className="grid h-7 w-7 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700">
-                              {(c.author?.name ||
-                                c.authorName ||
-                                "U")[0]?.toUpperCase()}
-                            </div>
-                            <div className="text-sm font-semibold text-slate-900">
-                              {c.author?.name || c.authorName || "User"}
-                            </div>
+                        <div className="flex items-center gap-2">
+                          <div className="grid h-8 w-8 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700">
+                            {(c.author?.name ||
+                              c.authorName ||
+                              "U")[0]?.toUpperCase()}
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900">
+                            {c.author?.name || c.authorName || "User"}
                           </div>
                         </div>
                         <div className="text-xs text-slate-500">
@@ -561,16 +628,15 @@ export default function UserCaseDetail() {
             </div>
 
             {/* Add comment */}
-            <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900">
                     Add a comment
                   </div>
                   <div className="mt-0.5 text-xs text-slate-600">
-                    {commentsMissing
-                      ? "Disabled: endpoint missing."
-                      : "Helpful: deadline, impact, steps taken, screenshots."}
+                    Helpful: deadline, impact, steps taken, what you tried,
+                    screenshots.
                   </div>
                 </div>
                 {String(status || "").toUpperCase() === "NEED_INFO" ? (
@@ -586,7 +652,7 @@ export default function UserCaseDetail() {
                 disabled={commentsMissing}
                 rows={3}
                 className={cn(
-                  "mt-3 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-200/40",
+                  "mt-3 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-200/40",
                   commentsMissing && "bg-slate-100 text-slate-400",
                 )}
                 placeholder={
@@ -598,7 +664,7 @@ export default function UserCaseDetail() {
 
               <div className="mt-3 flex items-center justify-between gap-3">
                 <div className="text-xs text-slate-500">
-                  Tip: Mention “deadline” and “business impact”.
+                  Tip: Start with “Deadline:” and “Impact:”.
                 </div>
                 <button
                   onClick={postComment}
@@ -620,10 +686,14 @@ export default function UserCaseDetail() {
         {/* RIGHT */}
         <div className="space-y-5">
           {/* Request info */}
-          <SoftCard className="p-5 shadow-md lg:top-5">
-            <SectionHeader icon={Info} title="Request info" />
+          <SoftCard className="p-5 lg:top-5 shadow-md">
+            <SectionHeader
+              icon={Info}
+              title="Request info"
+              subtitle="Quick facts (always visible)."
+            />
             <div className="mt-4 space-y-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                     Type
@@ -632,7 +702,7 @@ export default function UserCaseDetail() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                     Status
@@ -641,7 +711,7 @@ export default function UserCaseDetail() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                   Assigned to
                 </div>
@@ -650,11 +720,11 @@ export default function UserCaseDetail() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
+              <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900">
                 <div className="font-semibold">Focus tip</div>
                 <div className="mt-1 text-sm text-indigo-900/90">
-                  For urgent requests, add a comment with a clear deadline +
-                  what breaks if delayed.
+                  For urgent requests, comment with a deadline + what breaks if
+                  delayed.
                 </div>
               </div>
             </div>
@@ -665,15 +735,10 @@ export default function UserCaseDetail() {
             <SectionHeader
               icon={Paperclip}
               title="Attachments"
+              subtitle="Evidence and supporting files."
               right={
                 <button
-                  onClick={async () => {
-                    setAttLoading(true);
-                    const a = await listCaseAttachments(id);
-                    setAttMissing(!!a.missing);
-                    setAttachments(a.ok ? a.data?.items || a.data || [] : []);
-                    setAttLoading(false);
-                  }}
+                  onClick={refreshAttachments}
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   <RefreshCw className="h-4 w-4" />
@@ -687,16 +752,17 @@ export default function UserCaseDetail() {
                 <EndpointMissing label="Attachments" />
               ) : attLoading ? (
                 <div className="space-y-2">
-                  <div className="h-12 rounded-2xl bg-slate-100 animate-pulse" />
-                  <div className="h-12 w-2/3 rounded-2xl bg-slate-100 animate-pulse" />
+                  <div className="h-12 rounded-xl bg-slate-100 animate-pulse" />
+                  <div className="h-12 w-2/3 rounded-xl bg-slate-100 animate-pulse" />
                 </div>
               ) : attachments.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
                   <div className="font-semibold text-slate-900">
                     No attachments
                   </div>
                   <div className="mt-1 text-sm text-slate-600">
-                    Upload screenshots or files that support your request.
+                    Upload screenshots, logs, or documents to support your
+                    request.
                   </div>
                 </div>
               ) : (
@@ -708,37 +774,78 @@ export default function UserCaseDetail() {
                     const sizeBytes = file.sizeBytes || file.size || 0;
                     const downloadUrl =
                       file.downloadUrl || a.downloadUrl || null;
+                    const attId = a.id || file.id || name;
+                    const kind = fileIconByName(name);
 
                     return (
                       <div
-                        key={a.id || file.id || name}
-                        className="rounded-2xl border border-slate-200 bg-white p-4"
+                        key={attId}
+                        className="rounded-xl border border-slate-200 bg-white p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-slate-900">
-                              {name}
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-slate-50">
+                              {kind === "image" ? (
+                                <span className="text-xs font-bold text-slate-700">
+                                  IMG
+                                </span>
+                              ) : kind === "pdf" ? (
+                                <span className="text-xs font-bold text-slate-700">
+                                  PDF
+                                </span>
+                              ) : kind === "doc" ? (
+                                <span className="text-xs font-bold text-slate-700">
+                                  DOC
+                                </span>
+                              ) : kind === "sheet" ? (
+                                <span className="text-xs font-bold text-slate-700">
+                                  XLS
+                                </span>
+                              ) : (
+                                <span className="text-xs font-bold text-slate-700">
+                                  FILE
+                                </span>
+                              )}
                             </div>
-                            <div className="mt-1 text-xs text-slate-500">
-                              {formatBytes(sizeBytes)}
+
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-slate-900">
+                                {name}
+                              </div>
+                              <div className="mt-1 text-xs text-slate-500">
+                                {formatBytes(sizeBytes)}
+                              </div>
                             </div>
                           </div>
 
-                          {downloadUrl ? (
-                            <a
-                              href={downloadUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100"
+                          <div className="flex items-center gap-2">
+                            {downloadUrl ? (
+                              <a
+                                href={downloadUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100"
+                              >
+                                <Download className="h-4 w-4" />
+                                Download
+                              </a>
+                            ) : (
+                              <span className="text-xs text-slate-500">
+                                No link
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => removeAttachment(a.id)}
+                              className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100"
+                              title="Remove attachment"
+                              disabled={deletingId === String(a.id)}
                             >
-                              <Download className="h-4 w-4" />
-                              Download
-                            </a>
-                          ) : (
-                            <span className="text-xs text-slate-500">
-                              No link
-                            </span>
-                          )}
+                              <Trash2 className="h-4 w-4" />
+                              Remove
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -749,7 +856,7 @@ export default function UserCaseDetail() {
 
             <div className="mt-4">
               {uploadErr && (
-                <div className="mb-3 rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+                <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
                   {uploadErr}
                 </div>
               )}

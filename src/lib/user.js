@@ -80,7 +80,11 @@ export function uploadCaseAttachments(
   });
 }
 
-
+export function deleteCaseAttachment(caseId, linkId) {
+  return safe(`/user/cases/${caseId}/attachments/${linkId}`, {
+    method: "DELETE",
+  });
+}
 
 // Training
 export function listMyTrainings(params = {}) {
